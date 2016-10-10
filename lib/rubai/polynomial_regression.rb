@@ -7,17 +7,18 @@ class MeanSquaredErrorDivergenceError < RuntimeError
   end
 end
 
-class LinearRegression
+class PolynomialRegression
 
   def initialize(params = {})
-    @learning_rate      = params[:learning_rate] || 1.0e-7
-    @converge_threshold = params[:convergence_threshold] || 1.0e-3
-    @log                = params[:log_to_standard_out] || false
+    @learning_rate      = params[:learning_rate]         || 1.0e-20
+    @converge_threshold = params[:convergence_threshold] || 1.0e-5
+    @polynomial_degree  = params[:polynomial_degree]     || 1
+    @log                = params[:log_to_standard_out]   || false
   end
 
   def predict(features)
     if defined? @thetas
-      features = features.clone.unshift 1
+      features = polynomialize_features([features]).flatten.clone.unshift 1
       hypothesize @thetas, features
     end
   end
@@ -46,7 +47,7 @@ class LinearRegression
   # [ 460, 232, 315, 178 ]
   #
   def train(original_features, outputs)
-    features    = add_zero_feature original_features
+    features    = add_zero_feature polynomialize_features(original_features)
     @iterations = 0
     @old_thetas = Array.new features.first.size, 0
     @thetas     = batch_descend @old_thetas, features, outputs
@@ -57,14 +58,12 @@ class LinearRegression
     @iterations
   end
 
-  def scale_features(features)
-    features.transpose.map { |values| scale_values values }.transpose
-  end
-
-  def scale_values(values)
-    avg = values.reduce(:+) / values.count.to_f
-    max = values.max.to_f
-    values.map { |v| (v - avg) / max }
+  def polynomialize_features(features)
+    features.collect do |feature|
+      (1..@polynomial_degree).collect do |n|
+        feature.map{ |f| f**n }
+      end.flatten
+    end
   end
 
   def add_zero_feature(features)
@@ -125,9 +124,10 @@ class LinearRegression
 
 end
 
-features = [[2104, 5, 1], [1416, 3, 2], [1534, 3, 2], [852, 2, 1]]
-outputs  = [460, 232, 315, 178]
-lr = LinearRegression.new
+# features = [[2104, 5, 1], [1250, 3, 2], [1600, 3, 2], [852, 2, 1]]
+features = [[2104], [1250], [1600], [852]]
+outputs  = [460, 310, 320, 178]
+lr = PolynomialRegression.new(log_to_standard_out: true, polynomial_degree: 3)
 lr.train features, outputs
 
 features.each do |f|
