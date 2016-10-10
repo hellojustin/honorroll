@@ -1,19 +1,18 @@
-class MeanSquaredErrorDivergenceError < RuntimeError
-  def message
-    """
-    The Mean Squared Error is increasing, which means your thetas are diverging.
-    Try using a smaller learning_rate (alpha).
-    """
-  end
-end
-
 class PolynomialRegression
 
+  attr_accessor :learning_rate
+  attr_accessor :convergence_threshold
+  attr_accessor :polynomial_degree
+  attr_accessor :log
+  attr_accessor :iterations
+  attr_accessor :thetas
+  attr_accessor :old_thetas
+
   def initialize(params = {})
-    @learning_rate      = params[:learning_rate]         || 1.0e-20
-    @converge_threshold = params[:convergence_threshold] || 1.0e-5
-    @polynomial_degree  = params[:polynomial_degree]     || 1
-    @log                = params[:log_to_standard_out]   || false
+    @learning_rate         = params[:learning_rate]         || 1.0e-20
+    @convergence_threshold = params[:convergence_threshold] || 1.0e-4
+    @polynomial_degree     = params[:polynomial_degree]     || 1
+    @log                   = params[:log_to_standard_out]   || false
   end
 
   def predict(features)
@@ -72,13 +71,14 @@ class PolynomialRegression
 
   def batch_descend(thetas, features, outputs)
     if @log
+      puts "Iteration ##{@iterations}:"
       puts "Features: #{features}"
       puts "Outputs: #{outputs}"
       puts "Thetas: #{thetas}"
       puts ""
     end
     @iterations += 1
-    thetas.map.with_index do |theta, i|
+    @thetas = thetas.map.with_index do |theta, i|
       theta - @learning_rate * partial_derivative(thetas, features, outputs, i)
     end
   end
@@ -88,7 +88,7 @@ class PolynomialRegression
     new_thetas_mse = mean_squared_error(new_thetas, features, outputs)
     change = old_thetas_mse - new_thetas_mse
     raise MeanSquaredErrorDivergenceError if change < 0
-    change.abs > @converge_threshold
+    change.abs > @convergence_threshold
   end
 
   # Calculates the partial derivative for
@@ -124,12 +124,21 @@ class PolynomialRegression
 
 end
 
-# features = [[2104, 5, 1], [1250, 3, 2], [1600, 3, 2], [852, 2, 1]]
-features = [[2104], [1250], [1600], [852]]
-outputs  = [460, 310, 320, 178]
-lr = PolynomialRegression.new(log_to_standard_out: true, polynomial_degree: 3)
-lr.train features, outputs
-
-features.each do |f|
-  puts "Prediction for features #{f} :: #{lr.predict f}"
+class MeanSquaredErrorDivergenceError < RuntimeError
+  def message
+    """
+    The Mean Squared Error is increasing, which means your thetas are diverging.
+    Try using a smaller learning_rate (alpha).
+    """
+  end
 end
+
+# features = [[2104, 5, 1], [1250, 3, 2], [1600, 3, 2], [852, 2, 1]]
+# features = [[2104], [1250], [1600], [852]]
+# outputs  = [460, 310, 320, 178]
+# lr = PolynomialRegression.new(log_to_standard_out: true, polynomial_degree: 3)
+# lr.train features, outputs
+#
+# features.each do |f|
+#   puts "Prediction for features #{f} :: #{lr.predict f}"
+# end
