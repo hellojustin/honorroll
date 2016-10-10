@@ -1,10 +1,18 @@
-require 'matrix'
+class MeanSquaredErrorDivergenceError < RuntimeError
+  def message
+    """
+    The Mean Squared Error is increasing, which means your thetas are diverging.
+    Try using a smaller learning_rate (alpha).
+    """
+  end
+end
 
 class LinearRegression
 
   def initialize(params = {})
-    @learning_rate      = params[:learning_rate] || 1
-    @converge_threshold = params[:convergence_threshold] || 0.001
+    @learning_rate      = params[:learning_rate] || 1.0e-7
+    @converge_threshold = params[:convergence_threshold] || 1.0e-3
+    @log                = params[:log_to_standard_out] || false
   end
 
   def predict(features)
@@ -38,25 +46,25 @@ class LinearRegression
   # [ 460, 232, 315, 178 ]
   #
   def train(original_features, outputs)
-    features    = add_zero_feature scale_features(original_features)
-    thetas      = Array.new features.first.size, 0
-    outputs     = scale_values outputs
+    features    = add_zero_feature original_features
     @iterations = 0
-    @thetas     = batch_descend thetas, features, outputs
+    @old_thetas = Array.new features.first.size, 0
+    @thetas     = batch_descend @old_thetas, features, outputs
+    while continue? @thetas, @old_thetas, features, outputs
+      @old_thetas = @thetas
+      @thetas = batch_descend @thetas, features, outputs
+    end
     @iterations
   end
 
   def scale_features(features)
-    t_features = features.transpose.map do |feature_values|
-      scale_values feature_values
-    end
-    t_features.transpose
+    features.transpose.map { |values| scale_values values }.transpose
   end
 
   def scale_values(values)
-    avg = values.reduce(:+) / values.count
-    max = values.max
-    values.map { |v| (v - avg) / max.to_f }
+    avg = values.reduce(:+) / values.count.to_f
+    max = values.max.to_f
+    values.map { |v| (v - avg) / max }
   end
 
   def add_zero_feature(features)
@@ -64,23 +72,24 @@ class LinearRegression
   end
 
   def batch_descend(thetas, features, outputs)
-    @iterations += 1
-    new_thetas = thetas.map.with_index do |theta, i|
-      theta - @learning_rate * partial_derivative(thetas, features, outputs, i)
+    if @log
+      puts "Features: #{features}"
+      puts "Outputs: #{outputs}"
+      puts "Thetas: #{thetas}"
+      puts ""
     end
-    puts new_thetas.to_s
-    if continue? new_thetas, thetas
-      batch_descend new_thetas, features, outputs
-    else
-      new_thetas
+    @iterations += 1
+    thetas.map.with_index do |theta, i|
+      theta - @learning_rate * partial_derivative(thetas, features, outputs, i)
     end
   end
 
-  def continue? (new_thetas, old_thetas)
-    changes = new_thetas.zip(old_thetas).map{ |c| c.reduce(:-)}.map(&:abs)
-    avg_change = changes.reduce(:+) / changes.size.to_f
-    puts avg_change
-    avg_change > @converge_threshold
+  def continue? (new_thetas, old_thetas, features, outputs)
+    old_thetas_mse = mean_squared_error(old_thetas, features, outputs)
+    new_thetas_mse = mean_squared_error(new_thetas, features, outputs)
+    change = old_thetas_mse - new_thetas_mse
+    raise MeanSquaredErrorDivergenceError if change < 0
+    change.abs > @converge_threshold
   end
 
   # Calculates the partial derivative for
@@ -96,7 +105,7 @@ class LinearRegression
   end
 
   def mean_squared_error(thetas, features_set, outputs)
-    terms = features_set.map do |features|
+    terms = features_set.map.with_index do |features, i|
       (hypothesize(thetas, features) - outputs[i])**2
     end
     terms.reduce(:+).to_f / (2 * features_set.size.to_f)
@@ -114,4 +123,13 @@ class LinearRegression
     terms.map{ |t| t.reduce :* }.reduce :+
   end
 
+end
+
+features = [[2104, 5, 1], [1416, 3, 2], [1534, 3, 2], [852, 2, 1]]
+outputs  = [460, 232, 315, 178]
+lr = LinearRegression.new
+lr.train features, outputs
+
+features.each do |f|
+  puts "Prediction for features #{f} :: #{lr.predict f}"
 end
