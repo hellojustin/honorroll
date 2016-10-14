@@ -1,8 +1,29 @@
+# KMeans
+#
+# A class from which instances of the K-Means clustering method can be created
+# and run. K-Means clustering is a method of identifying clusters of points in
+# n-dimensional space. A fantastic explanation of the K-Means algorithm can be
+# found at https://www.youtube.com/watch?v=_aWzGGNrcic.
+#
 class KMeans
 
+  # An array of Cluster objects (see lib/rubai/cluster.rb) representing the
+  # clusters that K-Means will identify.
   attr_accessor :clusters
+  # An array of Point objects (see lib/rubai/points.rb) representing the dataset
+  # on which we will run k-means.
   attr_accessor :points
 
+  # Creates an instance of the KMeans class, optionally but likely initialized
+  # with a params hash containing the dataset.
+  #
+  # Params:
+  #   :points - an array of arrays, where the inner arrays are the n-dimensional
+  #             coordinates of each point in the dataset
+  #
+  # Returns:
+  #   An instance of KMeans
+  #
   def initialize(params = {})
     @points = if params[:points]
       params[:points].map { |p| Point.new p }
@@ -11,6 +32,27 @@ class KMeans
     end
   end
 
+  # Runs the k-means algorithm on the dataset specified at initialization.
+  # Defaults to idenifying two clusters, starting with random centroids, but
+  # a different number of clusters and starting centroids can be passed
+  # optionally. The number-of-clusters param is ignored if starting centroids
+  # are provided.
+  #
+  # Params:
+  #   number_of_clusters - (optional, defaults to 2) The number of cluster that
+  #                        the algorithm should identify. Ignored if
+  #                        initial_centroids is also passed.
+  #   initial_centroids  - An array of smaller arrays where the smaller arrays
+  #                        specify the n-dimensional initial coordinates of the
+  #                        centroids of the clusters. If not passed, the
+  #                        clusters will be initialized with random centroids.
+  #                        When passed, the number of clusters is determined by
+  #                        the length of this array.
+  #
+  # Returns:
+  #   The array of cluster objects, now populated with Points based on the
+  #   results of the algorithm.
+  #
   def identify_clusters(number_of_clusters = 2, initial_centroids = nil)
     @clusters = if initial_centroids
       initial_centroids.map { |ic| Cluster.new(centroid: Point.new(ic)) }
@@ -21,19 +63,22 @@ class KMeans
     @clusters
   end
 
-#private
+private
 
-  # Determines the nearest centroid to each point, and assigns the point to that
-  # centroid's cluster. If one or more point change from one cluster to another,
-  # the method recurs. This method mutates members of the @clusters and @points
-  # attributes.
+  # Performs one iteration of the k-means algorithm, and then calls itself if
+  # any points have changed cluster membership. Points are assigned to clusters
+  # using the euclidan distance method, but at some point in the future, it will
+  # be possible to provide other measures of distance.
+  #
+  # TODO: Optionally allow custom distance functions.
   #
   # Params:
-  #   points - the full dataset of n-dimensional points (an array of arrays)
+  #   points - the full dataset of n-dimensional points (array of Point objects)
   #   clusters - the array of Cluster objects
   #
   # Returns:
   #   Nil
+  #
   def assign_points_to_clusters!(points, clusters)
     cluster_changes = 0
     points.each do |p|
@@ -75,6 +120,7 @@ class KMeans
   # Returns:
   #   An array of n-dimensional array, each of which is the centroid of the
   #   cluster corresponding to its index in the array.
+  #
   def centroids(clusters)
     clusters.values.map { |cluster_points| centroid cluster_points }
   end
@@ -86,6 +132,7 @@ class KMeans
   #
   # Returns:
   #   An n-dimensional array representing the centroid of the set of points.
+  #
   def centroid(points)
     Point.new points.transpose.map{ |d| d.reduce(:+) / d.count.to_f }
   end
