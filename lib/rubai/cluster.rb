@@ -72,17 +72,49 @@ class Cluster
     self.centroid = Point.new avg_coord
   end
 
+  # Adds the specified Point object to this cluster, removing it from any other
+  # clusters first. In the future we may make it possible for a point to belong
+  # to more than one Cluster, or for a point to have a fuzzy relationship with
+  # clusters.
+  #
+  # Params:
+  #   point - the Point object that should be added to this cluster.
+  #
+  # Returns:
+  #   This Cluster instance.
+  #
   def add_point(point)
     point.cluster.remove_point point if point.cluster
     self.points << point
     point.cluster = self
   end
 
+  # Removes the specified Point object from this cluster. Note that if two
+  # points with the same coordinates are members of the cluster, only the one
+  # with the same memory address will be removed. (Removal is done by instance
+  # equality - which is based on the memory address - not coordinate equality.)
+  #
+  # Params:
+  #   point - the Point object that should be removed from this cluster.
+  #
+  # Returns:
+  #   nil
+  #
   def remove_point(point)
     self.points.delete point
     point.cluster = nil
   end
 
+  # Determines whether the specified point is a member of this cluster. Like
+  # #remove_point, this is done by instance equality (memory address), not
+  # coordinate equality.
+  #
+  # Params:
+  #   point - the Point object whose membership we wish to test.
+  #
+  # Returns
+  #   True if the point is a member of the cluster, False otherwise.
+  #
   def include?(point)
     self.points.include? point
   end
