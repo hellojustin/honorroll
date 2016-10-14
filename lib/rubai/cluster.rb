@@ -66,13 +66,14 @@ class Cluster
   #   cluster.
   #
   def centroid_from_points!
-    return self.centroid = nil if self.size == 0
+    return self.centroid if self.size == 0
     points = self.points.map &:coords
     avg_coord = points.transpose.map { |d| d.reduce(:+) / d.count.to_f }
     self.centroid = Point.new avg_coord
   end
 
   def add_point(point)
+    point.cluster.remove_point point if point.cluster
     self.points << point
     point.cluster = self
   end
