@@ -57,6 +57,8 @@ class PolynomialRegression
     @iterations
   end
 
+private
+
   def polynomialize_features(features)
     features.collect do |feature|
       (1..@polynomial_degree).collect do |n|
@@ -132,13 +134,3 @@ class MeanSquaredErrorDivergenceError < RuntimeError
     """
   end
 end
-
-# features = [[2104, 5, 1], [1250, 3, 2], [1600, 3, 2], [852, 2, 1]]
-# features = [[2104], [1250], [1600], [852]]
-# outputs  = [460, 310, 320, 178]
-# lr = PolynomialRegression.new(log_to_standard_out: true, polynomial_degree: 3)
-# lr.train features, outputs
-#
-# features.each do |f|
-#   puts "Prediction for features #{f} :: #{lr.predict f}"
-# end
