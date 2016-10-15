@@ -4,5 +4,5 @@ source "https://rubygems.org"
 group :development, :test do
   gem 'minitest', '~> 5.9'
   gem 'rake', '~> 10.1'
-  gem 'rocco', git: 'git@github.com:hellojustin/rocco.git'
+  gem 'rocco', git: 'https://github.com/hellojustin/rocco.git' # using https so travis-ci can `bundle install`
 end

@@ -1,6 +1,6 @@
 GIT
-  remote: git@github.com:hellojustin/rocco.git
-  revision: a810a4b947aec48bf2eea10be0bfc931213e4497
+  remote: https://github.com/hellojustin/rocco.git
+  revision: 4af2635a3aecb94221d23fc930ecb7f2fa8455be
   specs:
     rocco (0.9.0)
       mustache
@@ -11,7 +11,7 @@ GEM
   specs:
     minitest (5.9.1)
     mustache (1.0.3)
-    rake (10.1.0)
+    rake (10.5.0)
     redcarpet (1.17.2)
 
 PLATFORMS
