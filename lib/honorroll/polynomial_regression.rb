@@ -14,7 +14,7 @@
 #
 # TODO: Add option to use the normal equation method.
 #
-class PolynomialRegression
+class HonorRoll::PolynomialRegression
 
   # The learning_rate (sometimes called alpha), which influences the step size
   # in our gradient-decent method. If too large for the provided dataset,
@@ -206,7 +206,7 @@ private
     old_thetas_mse = mean_squared_error(old_thetas, features, outputs)
     new_thetas_mse = mean_squared_error(new_thetas, features, outputs)
     change = old_thetas_mse - new_thetas_mse
-    raise MeanSquaredErrorDivergenceError if change < 0
+    raise HonorRoll::MeanSquaredErrorDivergenceError if change < 0
     change.abs > @convergence_threshold
   end
 
@@ -274,7 +274,7 @@ end
 # are diverging (based on mean_squared_error). This is an error, because
 # diverging thetas mean that the algorithm will run forever.
 #
-class MeanSquaredErrorDivergenceError < RuntimeError
+class HonorRoll::MeanSquaredErrorDivergenceError < RuntimeError
   def message
     """
     The Mean Squared Error is increasing, which means your thetas are diverging.

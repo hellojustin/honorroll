@@ -6,7 +6,7 @@
 # n-dimensional space. A fantastic explanation of the K-Means algorithm can be
 # found at https://www.youtube.com/watch?v=_aWzGGNrcic.
 #
-class KMeans
+class HonorRoll::KMeans
 
   # An array of Cluster objects (see lib/honorroll/cluster.rb) representing the
   # clusters that K-Means will identify.
@@ -27,7 +27,7 @@ class KMeans
   #
   def initialize(params = {})
     @points = if params[:points]
-      params[:points].map { |p| Point.new p }
+      params[:points].map { |p| HonorRoll::Point.new p }
     else
       []
     end
@@ -56,7 +56,9 @@ class KMeans
   #
   def identify_clusters(number_of_clusters = 2, initial_centroids = nil)
     @clusters = if initial_centroids
-      initial_centroids.map { |ic| Cluster.new(centroid: Point.new(ic)) }
+      initial_centroids.map do |ic|
+        HonorRoll::Cluster.new(centroid: HonorRoll::Point.new(ic))
+      end
     else
       clusters_with_random_centroids points, number_of_clusters
     end
@@ -110,7 +112,8 @@ private
     point_coords = points.map &:coords
     dimension_ranges = point_coords.transpose.map { |p| p.min..p.max }
     (0...number_of_clusters).map do
-      Cluster.new(centroid: Point.random_point(dimension_ranges))
+      centroid = HonorRoll::Point.random_point(dimension_ranges)
+      HonorRoll::Cluster.new(centroid: centroid)
     end
   end
 
@@ -138,7 +141,7 @@ private
   #   An n-dimensional array representing the centroid of the set of points.
   #
   def centroid(points)
-    Point.new points.transpose.map{ |d| d.reduce(:+) / d.count.to_f }
+    HonorRoll::Point.new points.transpose.map{ |d| d.reduce(:+) / d.count.to_f }
   end
 
 end

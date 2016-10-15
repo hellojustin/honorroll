@@ -2,13 +2,13 @@ require 'spec_helper'
 require 'honorroll/k_means'
 require 'honorroll/point'
 
-describe KMeans do
+describe HonorRoll::KMeans do
 
   describe 'when initialized' do
 
     describe 'with no parameters' do
       before do
-        @kmeans = KMeans.new
+        @kmeans = HonorRoll::KMeans.new
       end
 
       it 'should have an empty array of points' do
@@ -24,12 +24,12 @@ describe KMeans do
         @points = [ [0.1, 0.1], [0.1, 0.15], [0.15, 0.1], [0.15, 0.15],
                     [0.5, 0.5], [0.5, 0.55], [0.55, 0.5], [0.55, 0.55],
                     [0.9, 0.9], [0.9, 0.95], [0.95, 0.9], [0.95, 0.95] ]
-        @kmeans = KMeans.new(points: @points)
+        @kmeans = HonorRoll::KMeans.new(points: @points)
       end
 
       it 'should have an array of Point objects based on coords past to #new' do
         @kmeans.points.each_with_index do |p, i|
-          p.must_be_instance_of Point
+          p.must_be_instance_of HonorRoll::Point
           p.coords.must_equal @points[i]
         end
       end
@@ -45,7 +45,7 @@ describe KMeans do
       @points = [ [0.1, 0.1], [0.1, 0.15], [0.15, 0.1], [0.15, 0.15],
                   [0.5, 0.5], [0.5, 0.55], [0.55, 0.5], [0.55, 0.55],
                   [0.9, 0.9], [0.9, 0.95], [0.95, 0.9], [0.95, 0.95] ]
-      @kmeans = KMeans.new(points: @points)
+      @kmeans = HonorRoll::KMeans.new(points: @points)
       @kmeans.identify_clusters 3, [[0.0, 0.0], [0.4, 0.45], [0.85, 0.85]]
     end
 
@@ -77,7 +77,7 @@ describe KMeans do
       @points = [ [0.1, 0.1], [0.1, 0.15], [0.15, 0.1], [0.15, 0.15],
                   [0.5, 0.5], [0.5, 0.55], [0.55, 0.5], [0.55, 0.55],
                   [0.9, 0.9], [0.9, 0.95], [0.95, 0.9], [0.95, 0.95] ]
-      @kmeans = KMeans.new(points: @points)
+      @kmeans = HonorRoll::KMeans.new(points: @points)
       @kmeans.identify_clusters 4
     end
 

@@ -3,7 +3,7 @@
 #
 # A class representing a point (or vector) in n-dimensional space.
 #
-class Point
+class HonorRoll::Point
 
   # The coordinates of the point
   attr_accessor :coords
@@ -23,7 +23,7 @@ class Point
   #   each dimension.
   #
   def self.random_point(dimension_ranges)
-    Point.new dimension_ranges.map { |r| rand(r.min.to_f..r.max.to_f) }
+    HonorRoll::Point.new dimension_ranges.map { |r| rand(r.min.to_f..r.max.to_f) }
   end
 
   # Creates an instance of a Point class, initialized with the provided
@@ -62,7 +62,9 @@ class Point
   #   The Euclidean distance, as a Float object.
   #
   def euclidean_distance_to(point)
-    raise IncompatibleDimensionsError if self.dimensions != point.dimensions
+    if self.dimensions != point.dimensions
+      raise HonorRoll::IncompatibleDimensionsError
+    end
     coord_pairs = self.coords.zip point.coords
     Math.sqrt coord_pairs.map{ |p| (p[0] - p[1])**2 }.reduce(:+)
   end
@@ -78,7 +80,7 @@ end
 # For example, a distance cannot be calculated between the points:
 #   [ 1, 2, 2, 3 ] and [4, 2]
 #
-class IncompatibleDimensionsError < ArgumentError
+class HonorRoll::IncompatibleDimensionsError < ArgumentError
   def message
     '''
     The provided Point object has an incompatible number of dimensions,

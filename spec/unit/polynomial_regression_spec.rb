@@ -1,13 +1,13 @@
 require 'spec_helper'
 require 'honorroll/polynomial_regression'
 
-describe PolynomialRegression do
+describe HonorRoll::PolynomialRegression do
 
   describe 'when initialized' do
 
     describe 'with no parameters' do
       before do
-        @pr = PolynomialRegression.new
+        @pr = HonorRoll::PolynomialRegression.new
       end
 
       it 'should have a default learning rate' do
@@ -32,7 +32,7 @@ describe PolynomialRegression do
           polynomial_degree:     2,
           log_to_standard_out:   true
         }
-        @pr = PolynomialRegression.new @params
+        @pr = HonorRoll::PolynomialRegression.new @params
       end
 
       it 'should use the provided learning rate' do
@@ -59,7 +59,7 @@ describe PolynomialRegression do
           learning_rate:         0.1,
           convergence_threshold: 1.0e-9
         }
-        @pr       = PolynomialRegression.new params
+        @pr       = HonorRoll::PolynomialRegression.new params
         @features = [[1], [2], [3], [4], [5]]
         @outputs  = [1.9, 4.1, 6.0, 7.8, 10.1]
         @pr.train @features, @outputs
@@ -86,7 +86,7 @@ describe PolynomialRegression do
           learning_rate:         600,
           convergence_threshold: 1.0e-9
         }
-        @pr       = PolynomialRegression.new params
+        @pr       = HonorRoll::PolynomialRegression.new params
         @features = [[1], [2], [3], [4], [5]]
         @outputs  = [1.9, 4.1, 6.0, 7.8, 10.1]
       end
@@ -94,7 +94,7 @@ describe PolynomialRegression do
       it 'should raise a MeanSquaredErrorDivergenceError' do
         Proc.new {
             @pr.train(@features, @outputs)
-        }.must_raise MeanSquaredErrorDivergenceError
+        }.must_raise HonorRoll::MeanSquaredErrorDivergenceError
       end
     end
   end
@@ -105,7 +105,7 @@ describe PolynomialRegression do
         learning_rate:         0.04,
         convergence_threshold: 1.0e-5
       }
-      @pr       = PolynomialRegression.new params
+      @pr       = HonorRoll::PolynomialRegression.new params
       @features = [[1, 2], [2, 4], [3, 5], [4, 7.5], [5, 9]]
       @outputs  = [0.95, 2.025, 6.0, 7.8, 10.05]
       @pr.train @features, @outputs
@@ -133,7 +133,7 @@ describe PolynomialRegression do
         convergence_threshold: 1.0e-5,
         polynomial_degree:     2
       }
-      @pr       = PolynomialRegression.new params
+      @pr       = HonorRoll::PolynomialRegression.new params
       @features = [[1], [2], [3], [4], [5]]
       @outputs  = [0.95, 2.025, 6.0, 7.8, 10.05]
       @pr.train @features, @outputs
@@ -161,7 +161,7 @@ describe PolynomialRegression do
         convergence_threshold: 1.0e-4,
         polynomial_degree:     3
       }
-      @pr       = PolynomialRegression.new params
+      @pr       = HonorRoll::PolynomialRegression.new params
       @features = [[1, 2], [2, 4], [3, 5], [4, 7.5], [5, 9]]
       @outputs  = [0.95, 2.025, 6.0, 7.8, 10.05]
       @pr.train @features, @outputs

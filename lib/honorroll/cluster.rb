@@ -3,7 +3,7 @@
 #
 # A class representing a Cluster. A Cluster is a group of Point objects.
 #
-class Cluster
+class HonorRoll::Cluster
 
   # An array of Point objects belonging to the cluster
   attr_accessor :points
@@ -70,7 +70,7 @@ class Cluster
     return self.centroid if self.size == 0
     points = self.points.map &:coords
     avg_coord = points.transpose.map { |d| d.reduce(:+) / d.count.to_f }
-    self.centroid = Point.new avg_coord
+    self.centroid = HonorRoll::Point.new avg_coord
   end
 
   # Adds the specified Point object to this cluster, removing it from any other

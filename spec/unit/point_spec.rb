@@ -1,14 +1,14 @@
 require 'spec_helper'
 require 'honorroll/point'
 
-describe Point do
+describe HonorRoll::Point do
 
   describe 'when initialized' do
 
     describe 'with no parameters' do
       before do
-        @point         = Point.new
-        @another_point = Point.new [1, 1]
+        @point         = HonorRoll::Point.new
+        @another_point = HonorRoll::Point.new [1, 1]
       end
 
       it 'should have a default coordinates equal to the origin in 2D space' do
@@ -24,9 +24,9 @@ describe Point do
 
     describe 'with a coords parameter' do
       before do
-        @point           = Point.new [3.4, 4.4, 7.1, 8.0]
-        @another_point   = Point.new [0.0, 1.2, 3.1, 4.7]
-        @diff_dimensions = Point.new [0.0, 1.2, 3.1]
+        @point           = HonorRoll::Point.new [3.4, 4.4, 7.1, 8.0]
+        @another_point   = HonorRoll::Point.new [0.0, 1.2, 3.1, 4.7]
+        @diff_dimensions = HonorRoll::Point.new [0.0, 1.2, 3.1]
       end
 
       it 'should have the coordinates passed to #new' do
@@ -42,14 +42,14 @@ describe Point do
             different dimensions''' do
         Proc.new {
             @point.euclidean_distance_to(@diff_dimensions)
-        }.must_raise IncompatibleDimensionsError
+        }.must_raise HonorRoll::IncompatibleDimensionsError
       end
     end
 
     describe 'as a random point' do
       before do
         @dimension_bounds = [0..1, 2..20, -5..0]
-        @point            = Point.random_point @dimension_bounds
+        @point            = HonorRoll::Point.random_point @dimension_bounds
       end
 
       it 'should have dimensionality equal to the count of dimensional bounds' do

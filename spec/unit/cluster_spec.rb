@@ -2,13 +2,13 @@ require 'spec_helper'
 require 'honorroll/cluster'
 require 'honorroll/point'
 
-describe Cluster do
+describe HonorRoll::Cluster do
 
   describe 'when initialized' do
 
     describe 'with no parameters' do
       before do
-        @cluster = Cluster.new
+        @cluster = HonorRoll::Cluster.new
       end
 
       it 'should have an empty array of points' do
@@ -27,8 +27,8 @@ describe Cluster do
 
     describe 'with a centroid' do
       before do
-        @centroid = Point.new [0,1]
-        @cluster  = Cluster.new( centroid: @centroid )
+        @centroid = HonorRoll::Point.new [0,1]
+        @cluster  = HonorRoll::Cluster.new( centroid: @centroid )
       end
 
       it 'should have an empty array of points' do
@@ -47,9 +47,9 @@ describe Cluster do
 
     describe 'with a points array' do
       before do
-        @points  = [Point.new([0,0]), Point.new([0,1]),
-                    Point.new([1,0]), Point.new([1,1])]
-        @cluster = Cluster.new( points: @points )
+        @points  = [HonorRoll::Point.new([0,0]), HonorRoll::Point.new([0,1]),
+                    HonorRoll::Point.new([1,0]), HonorRoll::Point.new([1,1])]
+        @cluster = HonorRoll::Cluster.new( points: @points )
       end
 
       it 'should have the same array of points passed to #new' do
@@ -71,7 +71,7 @@ describe Cluster do
         end
 
         it 'should return the centroid as a Point object' do
-          @centroid.must_be_instance_of Point
+          @centroid.must_be_instance_of HonorRoll::Point
         end
         it 'should return the expected centroid' do
           @centroid.coords.must_equal [0.5, 0.5]
