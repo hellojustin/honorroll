@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>cluster.rb</title>
+  <link rel="stylesheet" href="http://jashkenas.github.io/docco/resources/linear/docco.css">
+  <link rel="stylesheet" href="http://pygments.simplabs.com/default.css"
+</head>
+<body>
+<div class='container'>
+  <div class='page'>
+    <div class='header'>
+      <h1>cluster.rb</h1>
+    </div>
+
+
+    <div id="jump_to">
+      Jump To &hellip;
+      <div id="jump_wrapper">
+        <div id="jump_page">
+            <a class="source" href="../rubai.html">rubai.rb</a>
+            <a class="source" href="cluster.html">cluster.rb</a>
+            <a class="source" href="k_means.html">k_means.rb</a>
+            <a class="source" href="point.html">point.rb</a>
+            <a class="source" href="polynomial_regression.html">polynomial_regression.rb</a>
+        </div>
+      </div>
+    </div>
+
+
+      <p id='section-Cluster'>
+        <h2>Cluster</h2>
+
+<p>A class representing a Cluster. A Cluster is a group of Point objects.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre><span class="k">class</span> <span class="nc">Cluster</span></pre>
+      </div>
+
+      <p id='section-2'>
+        <p>An array of Point objects belonging to the cluster</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="kp">attr_accessor</span> <span class="ss">:points</span></pre>
+      </div>
+
+      <p id='section-3'>
+        <p>A Point object representing the centroid of the cluster</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="kp">attr_accessor</span> <span class="ss">:centroid</span></pre>
+      </div>
+
+      <p id='section-4'>
+        <p>Creates an instance of a Cluster class, initialized with defaults or the
+provided points and/or centroid.</p>
+
+<p>Params:
+  :points   &ndash; An array of Point objects that will become the members of the
+              cluster.
+  :centroid &ndash; A Point object representing the centroid of the cluster.</p>
+
+<p>Returns:
+  A Cluster instance.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">params</span> <span class="o">=</span> <span class="p">{})</span>
+    <span class="nb">self</span><span class="o">.</span><span class="n">points</span>   <span class="o">=</span> <span class="n">params</span><span class="o">[</span><span class="ss">:points</span><span class="o">]</span>   <span class="o">||</span> <span class="o">[]</span>
+    <span class="nb">self</span><span class="o">.</span><span class="n">centroid</span> <span class="o">=</span> <span class="n">params</span><span class="o">[</span><span class="ss">:centroid</span><span class="o">]</span> <span class="o">||</span> <span class="kp">nil</span>
+  <span class="k">end</span></pre>
+      </div>
+
+      <p id='section-5'>
+        <p>Returns the number of points in the cluster.</p>
+
+<p>Returns:
+  A Fixnum equal to the number of points in the cluster.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="k">def</span> <span class="nf">size</span>
+    <span class="nb">self</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">count</span>
+  <span class="k">end</span></pre>
+      </div>
+
+      <p id='section-6'>
+        <p>Calculates the number of dimensions for the points in the cluster. All
+points in the cluster should have the same number of dimensions.</p>
+
+<p>Returns:
+  A Fixnum equal to the number of coordinates that the first point in the
+  cluster.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="k">def</span> <span class="nf">dimensionality</span>
+    <span class="k">return</span> <span class="kp">nil</span> <span class="k">if</span> <span class="nb">self</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">count</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="nb">self</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">first</span><span class="o">.</span><span class="n">dimensions</span>
+  <span class="k">end</span></pre>
+      </div>
+
+      <p id='section-7'>
+        <p>Calculates a range for each dimension such that it covers all coordinates in
+that dimension for all points in the cluster.</p>
+
+<p>Returns:
+  An Array of Range objects, sucn that each range<em>i covers point.coords</em>i,
+  for all points.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="k">def</span> <span class="nf">dimensional_ranges</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="nb">self</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">map</span> <span class="o">&amp;</span><span class="ss">:coords</span>
+    <span class="n">points</span><span class="o">.</span><span class="n">transpose</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">d</span><span class="o">|</span> <span class="n">d</span><span class="o">.</span><span class="n">min</span><span class="o">.</span><span class="n">to_f</span><span class="o">.</span><span class="n">.d</span><span class="o">.</span><span class="n">max</span><span class="o">.</span><span class="n">to_f</span> <span class="p">}</span>
+  <span class="k">end</span></pre>
+      </div>
+
+      <p id='section-8'>
+        <p>Determines the centroid of the cluster (and updates the Cluster&rsquo;s @centroid
+property), based on the points of the cluster.</p>
+
+<p>Returns:
+  A Point object whose coordinates are the average of all points in the
+  cluster.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="k">def</span> <span class="nf">centroid_from_points!</span>
+    <span class="k">return</span> <span class="nb">self</span><span class="o">.</span><span class="n">centroid</span> <span class="k">if</span> <span class="nb">self</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="nb">self</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">map</span> <span class="o">&amp;</span><span class="ss">:coords</span>
+    <span class="n">avg_coord</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">transpose</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">d</span><span class="o">|</span> <span class="n">d</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="ss">:+</span><span class="p">)</span> <span class="o">/</span> <span class="n">d</span><span class="o">.</span><span class="n">count</span><span class="o">.</span><span class="n">to_f</span> <span class="p">}</span>
+    <span class="nb">self</span><span class="o">.</span><span class="n">centroid</span> <span class="o">=</span> <span class="no">Point</span><span class="o">.</span><span class="n">new</span> <span class="n">avg_coord</span>
+  <span class="k">end</span></pre>
+      </div>
+
+      <p id='section-9'>
+        <p>Adds the specified Point object to this cluster, removing it from any other
+clusters first. In the future we may make it possible for a point to belong
+to more than one Cluster, or for a point to have a fuzzy relationship with
+clusters.</p>
+
+<p>Params:
+  point &ndash; the Point object that should be added to this cluster.</p>
+
+<p>Returns:
+  This Cluster instance.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="k">def</span> <span class="nf">add_point</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
+    <span class="n">point</span><span class="o">.</span><span class="n">cluster</span><span class="o">.</span><span class="n">remove_point</span> <span class="n">point</span> <span class="k">if</span> <span class="n">point</span><span class="o">.</span><span class="n">cluster</span>
+    <span class="nb">self</span><span class="o">.</span><span class="n">points</span> <span class="o">&lt;&lt;</span> <span class="n">point</span>
+    <span class="n">point</span><span class="o">.</span><span class="n">cluster</span> <span class="o">=</span> <span class="nb">self</span>
+  <span class="k">end</span></pre>
+      </div>
+
+      <p id='section-10'>
+        <p>Removes the specified Point object from this cluster. Note that if two
+points with the same coordinates are members of the cluster, only the one
+with the same memory address will be removed. (Removal is done by instance
+equality &ndash; which is based on the memory address &ndash; not coordinate equality.)</p>
+
+<p>Params:
+  point &ndash; the Point object that should be removed from this cluster.</p>
+
+<p>Returns:
+  nil</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="k">def</span> <span class="nf">remove_point</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
+    <span class="nb">self</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">delete</span> <span class="n">point</span>
+    <span class="n">point</span><span class="o">.</span><span class="n">cluster</span> <span class="o">=</span> <span class="kp">nil</span>
+  <span class="k">end</span></pre>
+      </div>
+
+      <p id='section-11'>
+        <p>Determines whether the specified point is a member of this cluster. Like
+#remove_point, this is done by instance equality (memory address), not
+coordinate equality.</p>
+
+<p>Params:
+  point &ndash; the Point object whose membership we wish to test.</p>
+
+<p>Returns
+  True if the point is a member of the cluster, False otherwise.</p>
+
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="k">def</span> <span class="nf">include?</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
+    <span class="nb">self</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">include?</span> <span class="n">point</span>
+  <span class="k">end</span>
+
+<span class="k">end</span></pre>
+      </div>
+
+  </div>
+
+  <!--
+  <table cellspacing=0 cellpadding=0>
+  <thead>
+    <tr>
+      <th class=docs><h1>cluster.rb</h1></th>
+      <th class=code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr id='section-Cluster'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-Cluster">&#182;</a>
+        </div>
+        <h2>Cluster</h2>
+
+<p>A class representing a Cluster. A Cluster is a group of Point objects.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="k">class</span> <span class="nc">Cluster</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-2'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-2">&#182;</a>
+        </div>
+        <p>An array of Point objects belonging to the cluster</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="kp">attr_accessor</span> <span class="ss">:points</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-3'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-3">&#182;</a>
+        </div>
+        <p>A Point object representing the centroid of the cluster</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="kp">attr_accessor</span> <span class="ss">:centroid</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-4'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-4">&#182;</a>
+        </div>
+        <p>Creates an instance of a Cluster class, initialized with defaults or the
+provided points and/or centroid.</p>
+
+<p>Params:
+  :points   &ndash; An array of Point objects that will become the members of the
+              cluster.
+  :centroid &ndash; A Point object representing the centroid of the cluster.</p>
+
+<p>Returns:
+  A Cluster instance.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">params</span> <span class="o">=</span> <span class="p">{})</span>
+    <span class="nb">self</span><span class="o">.</span><span class="n">points</span>   <span class="o">=</span> <span class="n">params</span><span class="o">[</span><span class="ss">:points</span><span class="o">]</span>   <span class="o">||</span> <span class="o">[]</span>
+    <span class="nb">self</span><span class="o">.</span><span class="n">centroid</span> <span class="o">=</span> <span class="n">params</span><span class="o">[</span><span class="ss">:centroid</span><span class="o">]</span> <span class="o">||</span> <span class="kp">nil</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-5'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-5">&#182;</a>
+        </div>
+        <p>Returns the number of points in the cluster.</p>
+
+<p>Returns:
+  A Fixnum equal to the number of points in the cluster.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">size</span>
+    <span class="nb">self</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">count</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-6'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-6">&#182;</a>
+        </div>
+        <p>Calculates the number of dimensions for the points in the cluster. All
+points in the cluster should have the same number of dimensions.</p>
+
+<p>Returns:
+  A Fixnum equal to the number of coordinates that the first point in the
+  cluster.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">dimensionality</span>
+    <span class="k">return</span> <span class="kp">nil</span> <span class="k">if</span> <span class="nb">self</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">count</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="nb">self</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">first</span><span class="o">.</span><span class="n">dimensions</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-7'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-7">&#182;</a>
+        </div>
+        <p>Calculates a range for each dimension such that it covers all coordinates in
+that dimension for all points in the cluster.</p>
+
+<p>Returns:
+  An Array of Range objects, sucn that each range<em>i covers point.coords</em>i,
+  for all points.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">dimensional_ranges</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="nb">self</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">map</span> <span class="o">&amp;</span><span class="ss">:coords</span>
+    <span class="n">points</span><span class="o">.</span><span class="n">transpose</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">d</span><span class="o">|</span> <span class="n">d</span><span class="o">.</span><span class="n">min</span><span class="o">.</span><span class="n">to_f</span><span class="o">.</span><span class="n">.d</span><span class="o">.</span><span class="n">max</span><span class="o">.</span><span class="n">to_f</span> <span class="p">}</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-8'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-8">&#182;</a>
+        </div>
+        <p>Determines the centroid of the cluster (and updates the Cluster&rsquo;s @centroid
+property), based on the points of the cluster.</p>
+
+<p>Returns:
+  A Point object whose coordinates are the average of all points in the
+  cluster.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">centroid_from_points!</span>
+    <span class="k">return</span> <span class="nb">self</span><span class="o">.</span><span class="n">centroid</span> <span class="k">if</span> <span class="nb">self</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="nb">self</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">map</span> <span class="o">&amp;</span><span class="ss">:coords</span>
+    <span class="n">avg_coord</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">transpose</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">d</span><span class="o">|</span> <span class="n">d</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="ss">:+</span><span class="p">)</span> <span class="o">/</span> <span class="n">d</span><span class="o">.</span><span class="n">count</span><span class="o">.</span><span class="n">to_f</span> <span class="p">}</span>
+    <span class="nb">self</span><span class="o">.</span><span class="n">centroid</span> <span class="o">=</span> <span class="no">Point</span><span class="o">.</span><span class="n">new</span> <span class="n">avg_coord</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-9'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-9">&#182;</a>
+        </div>
+        <p>Adds the specified Point object to this cluster, removing it from any other
+clusters first. In the future we may make it possible for a point to belong
+to more than one Cluster, or for a point to have a fuzzy relationship with
+clusters.</p>
+
+<p>Params:
+  point &ndash; the Point object that should be added to this cluster.</p>
+
+<p>Returns:
+  This Cluster instance.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">add_point</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
+    <span class="n">point</span><span class="o">.</span><span class="n">cluster</span><span class="o">.</span><span class="n">remove_point</span> <span class="n">point</span> <span class="k">if</span> <span class="n">point</span><span class="o">.</span><span class="n">cluster</span>
+    <span class="nb">self</span><span class="o">.</span><span class="n">points</span> <span class="o">&lt;&lt;</span> <span class="n">point</span>
+    <span class="n">point</span><span class="o">.</span><span class="n">cluster</span> <span class="o">=</span> <span class="nb">self</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-10'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-10">&#182;</a>
+        </div>
+        <p>Removes the specified Point object from this cluster. Note that if two
+points with the same coordinates are members of the cluster, only the one
+with the same memory address will be removed. (Removal is done by instance
+equality &ndash; which is based on the memory address &ndash; not coordinate equality.)</p>
+
+<p>Params:
+  point &ndash; the Point object that should be removed from this cluster.</p>
+
+<p>Returns:
+  nil</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">remove_point</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
+    <span class="nb">self</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">delete</span> <span class="n">point</span>
+    <span class="n">point</span><span class="o">.</span><span class="n">cluster</span> <span class="o">=</span> <span class="kp">nil</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-11'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-11">&#182;</a>
+        </div>
+        <p>Determines whether the specified point is a member of this cluster. Like
+#remove_point, this is done by instance equality (memory address), not
+coordinate equality.</p>
+
+<p>Params:
+  point &ndash; the Point object whose membership we wish to test.</p>
+
+<p>Returns
+  True if the point is a member of the cluster, False otherwise.</p>
+
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">include?</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
+    <span class="nb">self</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">include?</span> <span class="n">point</span>
+  <span class="k">end</span>
+
+<span class="k">end</span></pre></div>
+      </td>
+    </tr>
+  </table> -->
+</div>
+</body>

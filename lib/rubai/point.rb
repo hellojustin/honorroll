@@ -1,4 +1,5 @@
 # Point
+# -----
 #
 # A class representing a point (or vector) in n-dimensional space.
 #

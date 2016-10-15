@@ -1,4 +1,5 @@
 # PolynomialRegression
+# --------------------
 #
 # A class from which instances of the PolynomialRegression algorithm can be
 # instantiated. Polynomial Regression is a supervised machine learninging
@@ -87,6 +88,7 @@ class PolynomialRegression
   #
   # This example data...
   #
+  # |             |            |            |         |
   # |-------------|------------|------------|---------|
   # | Feature 1   | Feature 2  | Feature 3  | Output  |
   # |-------------|------------|------------|---------|
@@ -95,15 +97,15 @@ class PolynomialRegression
   # | 1534        | 3          | 2          | 315     |
   # | 852         | 2          | 1          | 178     |  <-- another datapoint
   # | ...         | ...        | ...        | ...     |
-  # |-------------|------------|------------|---------|
+  #
   #
   # ...would be passed as two paramters:
   #
   # features:
-  # [ [2104, 5, 1], [1416, 3, 2], [1534, 3, 2], [852, 2, 1], ... ]
+  # `[ [2104, 5, 1], [1416, 3, 2], [1534, 3, 2], [852, 2, 1], ... ]`
   #
   # outputs:
-  # [ 460, 232, 315, 178 ]
+  # `[ 460, 232, 315, 178 ]`
   #
   def train(original_features, outputs)
     features    = add_zero_feature polynomialize_features(original_features)
@@ -116,6 +118,9 @@ class PolynomialRegression
     end
     @iterations
   end
+
+# Private Methods
+# ---------------
 
 private
 

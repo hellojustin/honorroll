@@ -1,4 +1,5 @@
 # Cluster
+# -------
 #
 # A class representing a Cluster. A Cluster is a group of Point objects.
 #
@@ -106,7 +107,7 @@ class Cluster
   end
 
   # Determines whether the specified point is a member of this cluster. Like
-  # #remove_point, this is done by instance equality (memory address), not
+  # \#remove_point, this is done by instance equality (memory address), not
   # coordinate equality.
   #
   # Params:

@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>k_means.rb</title>
+  <link rel="stylesheet" href="http://jashkenas.github.io/docco/resources/linear/docco.css">
+  <link rel="stylesheet" href="http://pygments.simplabs.com/default.css"
+</head>
+<body>
+<div class='container'>
+  <div class='page'>
+    <div class='header'>
+      <h1>k_means.rb</h1>
+    </div>
+
+
+    <div id="jump_to">
+      Jump To &hellip;
+      <div id="jump_wrapper">
+        <div id="jump_page">
+            <a class="source" href="../rubai.html">rubai.rb</a>
+            <a class="source" href="cluster.html">cluster.rb</a>
+            <a class="source" href="k_means.html">k_means.rb</a>
+            <a class="source" href="point.html">point.rb</a>
+            <a class="source" href="polynomial_regression.html">polynomial_regression.rb</a>
+        </div>
+      </div>
+    </div>
+
+
+      <p id='section-KMeans'>
+        <h2>KMeans</h2>
+
+<p>A class from which instances of the K-Means clustering method can be created
+and run. K-Means clustering is a method of identifying clusters of points in
+n-dimensional space. A fantastic explanation of the K-Means algorithm can be
+found at https://www.youtube.com/watch?v=_aWzGGNrcic.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre><span class="k">class</span> <span class="nc">KMeans</span></pre>
+      </div>
+
+      <p id='section-2'>
+        <p>An array of Cluster objects (see lib/rubai/cluster.rb) representing the
+clusters that K-Means will identify.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="kp">attr_accessor</span> <span class="ss">:clusters</span></pre>
+      </div>
+
+      <p id='section-3'>
+        <p>An array of Point objects (see lib/rubai/points.rb) representing the dataset
+on which we will run k-means.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="kp">attr_accessor</span> <span class="ss">:points</span></pre>
+      </div>
+
+      <p id='section-4'>
+        <p>Creates an instance of the KMeans class, optionally but likely initialized
+with a params hash containing the dataset.</p>
+
+<p>Params:
+  :points &ndash; an array of arrays, where the inner arrays are the n-dimensional
+            coordinates of each point in the dataset</p>
+
+<p>Returns:
+  An instance of KMeans</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">params</span> <span class="o">=</span> <span class="p">{})</span>
+    <span class="vi">@points</span> <span class="o">=</span> <span class="k">if</span> <span class="n">params</span><span class="o">[</span><span class="ss">:points</span><span class="o">]</span>
+      <span class="n">params</span><span class="o">[</span><span class="ss">:points</span><span class="o">].</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="nb">p</span><span class="o">|</span> <span class="no">Point</span><span class="o">.</span><span class="n">new</span> <span class="nb">p</span> <span class="p">}</span>
+    <span class="k">else</span>
+      <span class="o">[]</span>
+    <span class="k">end</span>
+  <span class="k">end</span></pre>
+      </div>
+
+      <p id='section-5'>
+        <p>Runs the k-means algorithm on the dataset specified at initialization.
+Defaults to idenifying two clusters, starting with random centroids, but
+a different number of clusters and starting centroids can be passed
+optionally. The number-of-clusters param is ignored if starting centroids
+are provided.</p>
+
+<p>Params:
+  number<em>of</em>clusters &ndash; (optional, defaults to 2) The number of cluster that
+                       the algorithm should identify. Ignored if
+                       initial<em>centroids is also passed.
+  initial</em>centroids  &ndash; An array of smaller arrays where the smaller arrays
+                       specify the n-dimensional initial coordinates of the
+                       centroids of the clusters. If not passed, the
+                       clusters will be initialized with random centroids.
+                       When passed, the number of clusters is determined by
+                       the length of this array.</p>
+
+<p>Returns:
+  The array of cluster objects, now populated with Points based on the
+  results of the algorithm.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="k">def</span> <span class="nf">identify_clusters</span><span class="p">(</span><span class="n">number_of_clusters</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">initial_centroids</span> <span class="o">=</span> <span class="kp">nil</span><span class="p">)</span>
+    <span class="vi">@clusters</span> <span class="o">=</span> <span class="k">if</span> <span class="n">initial_centroids</span>
+      <span class="n">initial_centroids</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">ic</span><span class="o">|</span> <span class="no">Cluster</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="ss">centroid</span><span class="p">:</span> <span class="no">Point</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">ic</span><span class="p">))</span> <span class="p">}</span>
+    <span class="k">else</span>
+      <span class="n">clusters_with_random_centroids</span> <span class="n">points</span><span class="p">,</span> <span class="n">number_of_clusters</span>
+    <span class="k">end</span>
+    <span class="n">assign_points_to_clusters!</span> <span class="vi">@points</span><span class="p">,</span> <span class="vi">@clusters</span>
+    <span class="vi">@clusters</span>
+  <span class="k">end</span></pre>
+      </div>
+
+      <p id='section-Private_Methods'>
+        <h2>Private Methods</h2>
+      </p>
+
+      <div class='highlight'>
+        <pre><span class="kp">private</span></pre>
+      </div>
+
+      <p id='section-7'>
+        <p>Performs one iteration of the k-means algorithm, and then calls itself if
+any points have changed cluster membership. Points are assigned to clusters
+using the euclidan distance method, but at some point in the future, it will
+be possible to provide other measures of distance.</p>
+
+<p>TODO: Optionally allow custom distance functions.</p>
+
+<p>Params:
+  points &ndash; the full dataset of n-dimensional points (array of Point objects)
+  clusters &ndash; the array of Cluster objects</p>
+
+<p>Returns:
+  Nil</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="k">def</span> <span class="nf">assign_points_to_clusters!</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">clusters</span><span class="p">)</span>
+    <span class="n">cluster_changes</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">points</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="nb">p</span><span class="o">|</span>
+      <span class="n">nearest</span> <span class="o">=</span> <span class="vi">@clusters</span><span class="o">.</span><span class="n">min_by</span> <span class="p">{</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span> <span class="nb">p</span><span class="o">.</span><span class="n">euclidean_distance_to</span> <span class="n">c</span><span class="o">.</span><span class="n">centroid</span> <span class="p">}</span>
+      <span class="n">cluster_changes</span> <span class="o">+=</span> <span class="mi">1</span> <span class="k">unless</span> <span class="n">nearest</span> <span class="o">==</span> <span class="nb">p</span><span class="o">.</span><span class="n">cluster</span>
+      <span class="n">nearest</span><span class="o">.</span><span class="n">add_point</span> <span class="nb">p</span>
+    <span class="k">end</span>
+    <span class="n">clusters</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span> <span class="n">c</span><span class="o">.</span><span class="n">centroid_from_points!</span> <span class="p">}</span>
+    <span class="n">assign_points_to_clusters!</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">clusters</span><span class="p">)</span> <span class="k">if</span> <span class="n">cluster_changes</span> <span class="o">&gt;</span> <span class="mi">0</span>
+  <span class="k">end</span></pre>
+      </div>
+
+      <p id='section-8'>
+        <p>Generates an array of random points that can be used as initial centroid
+values for each cluster. Note that a point is also an array, so this returns
+an array of arrays</p>
+
+<p>Params:
+  points &ndash; the full dataset (used to find max/min in each dimension)
+  number<em>of</em>centroids &ndash; the desired number of centroids</p>
+
+<p>Returns:
+  An array of randomly-generated n-dimensional points, of length
+  number<em>of</em>centroids</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="k">def</span> <span class="nf">clusters_with_random_centroids</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">number_of_clusters</span><span class="p">)</span>
+    <span class="n">point_coords</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">map</span> <span class="o">&amp;</span><span class="ss">:coords</span>
+    <span class="n">dimension_ranges</span> <span class="o">=</span> <span class="n">point_coords</span><span class="o">.</span><span class="n">transpose</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="nb">p</span><span class="o">|</span> <span class="nb">p</span><span class="o">.</span><span class="n">min</span><span class="o">.</span><span class="n">.p</span><span class="o">.</span><span class="n">max</span> <span class="p">}</span>
+    <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="o">.</span><span class="n">number_of_clusters</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="k">do</span>
+      <span class="no">Cluster</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="ss">centroid</span><span class="p">:</span> <span class="no">Point</span><span class="o">.</span><span class="n">random_point</span><span class="p">(</span><span class="n">dimension_ranges</span><span class="p">))</span>
+    <span class="k">end</span>
+  <span class="k">end</span></pre>
+      </div>
+
+      <p id='section-9'>
+        <p>Determines the centroid for each of a set of clusters.</p>
+
+<p>Params:
+  clusters &ndash; an associative array where the key is a cluster number, and the
+             value is an array of n-dimensional points belonging to that
+             cluster.</p>
+
+<p>Returns:
+  An array of n-dimensional array, each of which is the centroid of the
+  cluster corresponding to its index in the array.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="k">def</span> <span class="nf">centroids</span><span class="p">(</span><span class="n">clusters</span><span class="p">)</span>
+    <span class="n">clusters</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">cluster_points</span><span class="o">|</span> <span class="n">centroid</span> <span class="n">cluster_points</span> <span class="p">}</span>
+  <span class="k">end</span></pre>
+      </div>
+
+      <p id='section-10'>
+        <p>Finds the centroid &ndash; or average point &ndash; of a set of n-dimensional points.</p>
+
+<p>Params:
+  points &ndash; An array of n-dimensional points (array of arrays).</p>
+
+<p>Returns:
+  An n-dimensional array representing the centroid of the set of points.</p>
+
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="k">def</span> <span class="nf">centroid</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+    <span class="no">Point</span><span class="o">.</span><span class="n">new</span> <span class="n">points</span><span class="o">.</span><span class="n">transpose</span><span class="o">.</span><span class="n">map</span><span class="p">{</span> <span class="o">|</span><span class="n">d</span><span class="o">|</span> <span class="n">d</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="ss">:+</span><span class="p">)</span> <span class="o">/</span> <span class="n">d</span><span class="o">.</span><span class="n">count</span><span class="o">.</span><span class="n">to_f</span> <span class="p">}</span>
+  <span class="k">end</span>
+
+<span class="k">end</span></pre>
+      </div>
+
+  </div>
+
+  <!--
+  <table cellspacing=0 cellpadding=0>
+  <thead>
+    <tr>
+      <th class=docs><h1>k_means.rb</h1></th>
+      <th class=code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr id='section-KMeans'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-KMeans">&#182;</a>
+        </div>
+        <h2>KMeans</h2>
+
+<p>A class from which instances of the K-Means clustering method can be created
+and run. K-Means clustering is a method of identifying clusters of points in
+n-dimensional space. A fantastic explanation of the K-Means algorithm can be
+found at https://www.youtube.com/watch?v=_aWzGGNrcic.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="k">class</span> <span class="nc">KMeans</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-2'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-2">&#182;</a>
+        </div>
+        <p>An array of Cluster objects (see lib/rubai/cluster.rb) representing the
+clusters that K-Means will identify.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="kp">attr_accessor</span> <span class="ss">:clusters</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-3'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-3">&#182;</a>
+        </div>
+        <p>An array of Point objects (see lib/rubai/points.rb) representing the dataset
+on which we will run k-means.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="kp">attr_accessor</span> <span class="ss">:points</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-4'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-4">&#182;</a>
+        </div>
+        <p>Creates an instance of the KMeans class, optionally but likely initialized
+with a params hash containing the dataset.</p>
+
+<p>Params:
+  :points &ndash; an array of arrays, where the inner arrays are the n-dimensional
+            coordinates of each point in the dataset</p>
+
+<p>Returns:
+  An instance of KMeans</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">params</span> <span class="o">=</span> <span class="p">{})</span>
+    <span class="vi">@points</span> <span class="o">=</span> <span class="k">if</span> <span class="n">params</span><span class="o">[</span><span class="ss">:points</span><span class="o">]</span>
+      <span class="n">params</span><span class="o">[</span><span class="ss">:points</span><span class="o">].</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="nb">p</span><span class="o">|</span> <span class="no">Point</span><span class="o">.</span><span class="n">new</span> <span class="nb">p</span> <span class="p">}</span>
+    <span class="k">else</span>
+      <span class="o">[]</span>
+    <span class="k">end</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-5'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-5">&#182;</a>
+        </div>
+        <p>Runs the k-means algorithm on the dataset specified at initialization.
+Defaults to idenifying two clusters, starting with random centroids, but
+a different number of clusters and starting centroids can be passed
+optionally. The number-of-clusters param is ignored if starting centroids
+are provided.</p>
+
+<p>Params:
+  number<em>of</em>clusters &ndash; (optional, defaults to 2) The number of cluster that
+                       the algorithm should identify. Ignored if
+                       initial<em>centroids is also passed.
+  initial</em>centroids  &ndash; An array of smaller arrays where the smaller arrays
+                       specify the n-dimensional initial coordinates of the
+                       centroids of the clusters. If not passed, the
+                       clusters will be initialized with random centroids.
+                       When passed, the number of clusters is determined by
+                       the length of this array.</p>
+
+<p>Returns:
+  The array of cluster objects, now populated with Points based on the
+  results of the algorithm.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">identify_clusters</span><span class="p">(</span><span class="n">number_of_clusters</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">initial_centroids</span> <span class="o">=</span> <span class="kp">nil</span><span class="p">)</span>
+    <span class="vi">@clusters</span> <span class="o">=</span> <span class="k">if</span> <span class="n">initial_centroids</span>
+      <span class="n">initial_centroids</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">ic</span><span class="o">|</span> <span class="no">Cluster</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="ss">centroid</span><span class="p">:</span> <span class="no">Point</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">ic</span><span class="p">))</span> <span class="p">}</span>
+    <span class="k">else</span>
+      <span class="n">clusters_with_random_centroids</span> <span class="n">points</span><span class="p">,</span> <span class="n">number_of_clusters</span>
+    <span class="k">end</span>
+    <span class="n">assign_points_to_clusters!</span> <span class="vi">@points</span><span class="p">,</span> <span class="vi">@clusters</span>
+    <span class="vi">@clusters</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-Private_Methods'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-Private_Methods">&#182;</a>
+        </div>
+        <h2>Private Methods</h2>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="kp">private</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-7'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-7">&#182;</a>
+        </div>
+        <p>Performs one iteration of the k-means algorithm, and then calls itself if
+any points have changed cluster membership. Points are assigned to clusters
+using the euclidan distance method, but at some point in the future, it will
+be possible to provide other measures of distance.</p>
+
+<p>TODO: Optionally allow custom distance functions.</p>
+
+<p>Params:
+  points &ndash; the full dataset of n-dimensional points (array of Point objects)
+  clusters &ndash; the array of Cluster objects</p>
+
+<p>Returns:
+  Nil</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">assign_points_to_clusters!</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">clusters</span><span class="p">)</span>
+    <span class="n">cluster_changes</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">points</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="nb">p</span><span class="o">|</span>
+      <span class="n">nearest</span> <span class="o">=</span> <span class="vi">@clusters</span><span class="o">.</span><span class="n">min_by</span> <span class="p">{</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span> <span class="nb">p</span><span class="o">.</span><span class="n">euclidean_distance_to</span> <span class="n">c</span><span class="o">.</span><span class="n">centroid</span> <span class="p">}</span>
+      <span class="n">cluster_changes</span> <span class="o">+=</span> <span class="mi">1</span> <span class="k">unless</span> <span class="n">nearest</span> <span class="o">==</span> <span class="nb">p</span><span class="o">.</span><span class="n">cluster</span>
+      <span class="n">nearest</span><span class="o">.</span><span class="n">add_point</span> <span class="nb">p</span>
+    <span class="k">end</span>
+    <span class="n">clusters</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span> <span class="n">c</span><span class="o">.</span><span class="n">centroid_from_points!</span> <span class="p">}</span>
+    <span class="n">assign_points_to_clusters!</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">clusters</span><span class="p">)</span> <span class="k">if</span> <span class="n">cluster_changes</span> <span class="o">&gt;</span> <span class="mi">0</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-8'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-8">&#182;</a>
+        </div>
+        <p>Generates an array of random points that can be used as initial centroid
+values for each cluster. Note that a point is also an array, so this returns
+an array of arrays</p>
+
+<p>Params:
+  points &ndash; the full dataset (used to find max/min in each dimension)
+  number<em>of</em>centroids &ndash; the desired number of centroids</p>
+
+<p>Returns:
+  An array of randomly-generated n-dimensional points, of length
+  number<em>of</em>centroids</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">clusters_with_random_centroids</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">number_of_clusters</span><span class="p">)</span>
+    <span class="n">point_coords</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">map</span> <span class="o">&amp;</span><span class="ss">:coords</span>
+    <span class="n">dimension_ranges</span> <span class="o">=</span> <span class="n">point_coords</span><span class="o">.</span><span class="n">transpose</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="nb">p</span><span class="o">|</span> <span class="nb">p</span><span class="o">.</span><span class="n">min</span><span class="o">.</span><span class="n">.p</span><span class="o">.</span><span class="n">max</span> <span class="p">}</span>
+    <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="o">.</span><span class="n">number_of_clusters</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="k">do</span>
+      <span class="no">Cluster</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="ss">centroid</span><span class="p">:</span> <span class="no">Point</span><span class="o">.</span><span class="n">random_point</span><span class="p">(</span><span class="n">dimension_ranges</span><span class="p">))</span>
+    <span class="k">end</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-9'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-9">&#182;</a>
+        </div>
+        <p>Determines the centroid for each of a set of clusters.</p>
+
+<p>Params:
+  clusters &ndash; an associative array where the key is a cluster number, and the
+             value is an array of n-dimensional points belonging to that
+             cluster.</p>
+
+<p>Returns:
+  An array of n-dimensional array, each of which is the centroid of the
+  cluster corresponding to its index in the array.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">centroids</span><span class="p">(</span><span class="n">clusters</span><span class="p">)</span>
+    <span class="n">clusters</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">cluster_points</span><span class="o">|</span> <span class="n">centroid</span> <span class="n">cluster_points</span> <span class="p">}</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-10'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-10">&#182;</a>
+        </div>
+        <p>Finds the centroid &ndash; or average point &ndash; of a set of n-dimensional points.</p>
+
+<p>Params:
+  points &ndash; An array of n-dimensional points (array of arrays).</p>
+
+<p>Returns:
+  An n-dimensional array representing the centroid of the set of points.</p>
+
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">centroid</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+    <span class="no">Point</span><span class="o">.</span><span class="n">new</span> <span class="n">points</span><span class="o">.</span><span class="n">transpose</span><span class="o">.</span><span class="n">map</span><span class="p">{</span> <span class="o">|</span><span class="n">d</span><span class="o">|</span> <span class="n">d</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="ss">:+</span><span class="p">)</span> <span class="o">/</span> <span class="n">d</span><span class="o">.</span><span class="n">count</span><span class="o">.</span><span class="n">to_f</span> <span class="p">}</span>
+  <span class="k">end</span>
+
+<span class="k">end</span></pre></div>
+      </td>
+    </tr>
+  </table> -->
+</div>
+</body>

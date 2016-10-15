@@ -1,4 +1,5 @@
 # KMeans
+# ------
 #
 # A class from which instances of the K-Means clustering method can be created
 # and run. K-Means clustering is a method of identifying clusters of points in
@@ -62,6 +63,9 @@ class KMeans
     assign_points_to_clusters! @points, @clusters
     @clusters
   end
+
+# Private Methods
+# ---------------
 
 private
 

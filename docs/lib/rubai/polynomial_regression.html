@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>polynomial_regression.rb</title>
+  <link rel="stylesheet" href="http://jashkenas.github.io/docco/resources/linear/docco.css">
+  <link rel="stylesheet" href="http://pygments.simplabs.com/default.css"
+</head>
+<body>
+<div class='container'>
+  <div class='page'>
+    <div class='header'>
+      <h1>polynomial_regression.rb</h1>
+    </div>
+
+
+    <div id="jump_to">
+      Jump To &hellip;
+      <div id="jump_wrapper">
+        <div id="jump_page">
+            <a class="source" href="../rubai.html">rubai.rb</a>
+            <a class="source" href="cluster.html">cluster.rb</a>
+            <a class="source" href="k_means.html">k_means.rb</a>
+            <a class="source" href="point.html">point.rb</a>
+            <a class="source" href="polynomial_regression.html">polynomial_regression.rb</a>
+        </div>
+      </div>
+    </div>
+
+
+      <p id='section-PolynomialRegression'>
+        <h2>PolynomialRegression</h2>
+
+<p>A class from which instances of the PolynomialRegression algorithm can be
+instantiated. Polynomial Regression is a supervised machine learninging
+technique that attempts to fit a line or curve function (hence polynomial) to
+a dataset where the input values (aka features), and output values are known.
+Once fitted, the line function can be used to predict the outputs values for
+new input values.</p>
+
+<p>Currently, this implementation uses the gradient-decent method of fitting a
+curve to the dataset. In the future, we will add the option to use the normal
+equation method.</p>
+
+<p>TODO: Add option to use the normal equation method.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre><span class="k">class</span> <span class="nc">PolynomialRegression</span></pre>
+      </div>
+
+      <p id='section-2'>
+        <p>The learning_rate (sometimes called alpha), which influences the step size
+in our gradient-decent method. If too large for the provided dataset,
+gradient-decent may never reach convergence.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="kp">attr_accessor</span> <span class="ss">:learning_rate</span></pre>
+      </div>
+
+      <p id='section-3'>
+        <p>The convergence threshold is the mean<em>squared</em>error at which we decide to
+stop optimizing the fit of the line. This too must likely be adjusted based
+on the dataset.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="kp">attr_accessor</span> <span class="ss">:convergence_threshold</span></pre>
+      </div>
+
+      <p id='section-4'>
+        <p>The polynomial detree influences the shape of the line/curve that we&rsquo;re
+going to fit. A 1-degree (or first-degree) polynomial uses the formula
+&lsquo;Bx + C&rsquo;, which represents a straight but possibly slanted line. A
+2-degree (or second-degree) polynomial uses the formula &lsquo;Ax^2 + Bx + C&rsquo;,
+which represents a u-shaped line. (Note these examples assume a
+1-dimensional feature set.) The polynomial degree must be a whole number
+greater that 0.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="kp">attr_accessor</span> <span class="ss">:polynomial_degree</span></pre>
+      </div>
+
+      <p id='section-5'>
+        <p>A flag to determine whether log statements should be written to standard
+out.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="kp">attr_accessor</span> <span class="ss">:log</span></pre>
+      </div>
+
+      <p id='section-6'>
+        <p>A counter that keeps track of the number of iterations of the algorithm that
+have been run.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="kp">attr_accessor</span> <span class="ss">:iterations</span></pre>
+      </div>
+
+      <p id='section-7'>
+        <p>An array of theta values &ndash; the coefficients for each term in the polynomial
+formula. These are what the algorithm tries to learn during training, and
+are then used to make predictions for new inputs.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="kp">attr_accessor</span> <span class="ss">:thetas</span></pre>
+      </div>
+
+      <p id='section-8'>
+        <p>The array of theta values from the previous iteration of the algorithm. We
+keep these around so that we can determine if the error is increasing or
+decreasing.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="kp">attr_accessor</span> <span class="ss">:old_thetas</span></pre>
+      </div>
+
+      <p id='section-9'>
+        <p>Creates an instance of PolynomialRegression. If no parameters are passed,
+defaults are used, but given the nature of Polynomial Regression, you&rsquo;ll
+probably have to use non-default values that work for your dataset.</p>
+
+<p>Params (passed as a hash):
+  :learning<em>rate &ndash; the learning rate that should be used for
+                   gradient-decent. Defaults to 1.0e-20. (small and slow)
+  :convergence</em>threshold &ndash; the error threshold at which we stop the
+                   gradient-decent iterations because we have a &ldquo;good
+                   enough&rdquo; fit. Defaults to 1.0e-4.
+  :polynomial_degree &ndash; a Fixnum specifying the shape of the line (or the
+                   number of terms in the line&rsquo;s formula). Defaults to 1.
+  :log           &ndash; set to true for log output. Defaults to false.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">params</span> <span class="o">=</span> <span class="p">{})</span>
+    <span class="vi">@learning_rate</span>         <span class="o">=</span> <span class="n">params</span><span class="o">[</span><span class="ss">:learning_rate</span><span class="o">]</span>         <span class="o">||</span> <span class="mi">1</span><span class="o">.</span><span class="mi">0</span><span class="n">e</span><span class="o">-</span><span class="mi">20</span>
+    <span class="vi">@convergence_threshold</span> <span class="o">=</span> <span class="n">params</span><span class="o">[</span><span class="ss">:convergence_threshold</span><span class="o">]</span> <span class="o">||</span> <span class="mi">1</span><span class="o">.</span><span class="mi">0</span><span class="n">e</span><span class="o">-</span><span class="mi">4</span>
+    <span class="vi">@polynomial_degree</span>     <span class="o">=</span> <span class="n">params</span><span class="o">[</span><span class="ss">:polynomial_degree</span><span class="o">]</span>     <span class="o">||</span> <span class="mi">1</span>
+    <span class="vi">@log</span>                   <span class="o">=</span> <span class="n">params</span><span class="o">[</span><span class="ss">:log_to_standard_out</span><span class="o">]</span>   <span class="o">||</span> <span class="kp">false</span>
+  <span class="k">end</span></pre>
+      </div>
+
+      <p id='section-10'>
+        <p>Predicts the output value for a given set of features (inputs), once the
+instance is trained.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">defined?</span> <span class="vi">@thetas</span>
+      <span class="n">features</span> <span class="o">=</span> <span class="n">polynomialize_features</span><span class="p">(</span><span class="o">[</span><span class="n">features</span><span class="o">]</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="o">.</span><span class="n">clone</span><span class="o">.</span><span class="n">unshift</span> <span class="mi">1</span>
+      <span class="n">hypothesize</span> <span class="vi">@thetas</span><span class="p">,</span> <span class="n">features</span>
+    <span class="k">end</span>
+  <span class="k">end</span></pre>
+      </div>
+
+      <p id='section-11'>
+        <p>Runs the training process to fit a line to a particular set of feactures and
+outputs. One datapoint includes one or more features and exactly one output.</p>
+
+<p>This example data&hellip;</p>
+
+<table><thead>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</thead><tbody>
+<tr>
+<td>Feature 1</td>
+<td>Feature 2</td>
+<td>Feature 3</td>
+<td>Output</td>
+</tr>
+<tr>
+<td>&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;</td>
+<td>&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;</td>
+<td>&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;</td>
+<td>&mdash;&mdash;&mdash;&mdash;&ndash;</td>
+</tr>
+<tr>
+<td>2104</td>
+<td>5</td>
+<td>1</td>
+<td>460</td>
+</tr>
+<tr>
+<td>1416</td>
+<td>3</td>
+<td>2</td>
+<td>232</td>
+</tr>
+<tr>
+<td>1534</td>
+<td>3</td>
+<td>2</td>
+<td>315</td>
+</tr>
+<tr>
+<td>852</td>
+<td>2</td>
+<td>1</td>
+<td>178</td>
+</tr>
+<tr>
+<td>&hellip;</td>
+<td>&hellip;</td>
+<td>&hellip;</td>
+<td>&hellip;</td>
+</tr>
+</tbody></table>
+<p>&hellip;would be passed as two paramters:</p>
+
+<p>features:
+<code>[ [2104, 5, 1], [1416, 3, 2], [1534, 3, 2], [852, 2, 1], &hellip; ]</code></p>
+
+<p>outputs:
+<code>[ 460, 232, 315, 178 ]</code></p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">original_features</span><span class="p">,</span> <span class="n">outputs</span><span class="p">)</span>
+    <span class="n">features</span>    <span class="o">=</span> <span class="n">add_zero_feature</span> <span class="n">polynomialize_features</span><span class="p">(</span><span class="n">original_features</span><span class="p">)</span>
+    <span class="vi">@iterations</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="vi">@old_thetas</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">.</span><span class="n">new</span> <span class="n">features</span><span class="o">.</span><span class="n">first</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="vi">@thetas</span>     <span class="o">=</span> <span class="n">batch_descend</span> <span class="vi">@old_thetas</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">outputs</span>
+    <span class="k">while</span> <span class="n">continue?</span> <span class="vi">@thetas</span><span class="p">,</span> <span class="vi">@old_thetas</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">outputs</span>
+      <span class="vi">@old_thetas</span> <span class="o">=</span> <span class="vi">@thetas</span>
+      <span class="vi">@thetas</span> <span class="o">=</span> <span class="n">batch_descend</span> <span class="vi">@thetas</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">outputs</span>
+    <span class="k">end</span>
+    <span class="vi">@iterations</span>
+  <span class="k">end</span></pre>
+      </div>
+
+      <p id='section-Private_Methods'>
+        <h2>Private Methods</h2>
+      </p>
+
+      <div class='highlight'>
+        <pre><span class="kp">private</span></pre>
+      </div>
+
+      <p id='section-13'>
+        <p>Augments the provided features to reflect the specified polynomial degree.
+For example if for the feature &ldquo;age&rdquo;, and polynomial degree 2, this function
+would produce the array [(age), (age)^2]. For a third-degree polynomial, it
+produces [(age), (age)^2, (age)^3], and so.</p>
+
+<p>Params:
+  features &ndash; The full feature set as an array of arrays.</p>
+
+<p>Returns:
+  The augmented feature set with the additional x^2, x^3, etc terms.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="k">def</span> <span class="nf">polynomialize_features</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
+    <span class="n">features</span><span class="o">.</span><span class="n">collect</span> <span class="k">do</span> <span class="o">|</span><span class="n">feature</span><span class="o">|</span>
+      <span class="p">(</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="vi">@polynomial_degree</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span> <span class="k">do</span> <span class="o">|</span><span class="n">n</span><span class="o">|</span>
+        <span class="n">feature</span><span class="o">.</span><span class="n">map</span><span class="p">{</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="n">f</span><span class="o">**</span><span class="n">n</span> <span class="p">}</span>
+      <span class="k">end</span><span class="o">.</span><span class="n">flatten</span>
+    <span class="k">end</span>
+  <span class="k">end</span></pre>
+      </div>
+
+      <p id='section-14'>
+        <p>Adds a the x^0 feature, which is the variable used to multiply the theta
+value that represents the y-intercept in our curve or line equation.</p>
+
+<p>Params:
+  features &ndash; The full feature set as an array of arrays.</p>
+
+<p>Returns:
+    The augmented feature set with the additional x^0 term.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="k">def</span> <span class="nf">add_zero_feature</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
+    <span class="n">features</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="n">f</span><span class="o">.</span><span class="n">clone</span><span class="o">.</span><span class="n">unshift</span> <span class="mi">1</span> <span class="p">}</span>
+  <span class="k">end</span></pre>
+      </div>
+
+      <p id='section-15'>
+        <p>Runs one iteration of the batch-decend algorithm.</p>
+
+<p>Params:
+  thetas   &ndash; the list of coefficients in our line formula that we&rsquo;re trying
+             to optimize.
+  features &ndash; an array of arrays, where each inner array contains the input
+             values for one record in the training set.
+  outputs  &ndash; an array of Floats, each of which is the output value of one
+             record in the training set.
+Returns:
+  The updated array of thetas.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="k">def</span> <span class="nf">batch_descend</span><span class="p">(</span><span class="n">thetas</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">outputs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="vi">@log</span>
+      <span class="nb">puts</span> <span class="s2">&quot;Iteration #</span><span class="si">#{</span><span class="vi">@iterations</span><span class="si">}</span><span class="s2">:&quot;</span>
+      <span class="nb">puts</span> <span class="s2">&quot;Features: </span><span class="si">#{</span><span class="n">features</span><span class="si">}</span><span class="s2">&quot;</span>
+      <span class="nb">puts</span> <span class="s2">&quot;Outputs: </span><span class="si">#{</span><span class="n">outputs</span><span class="si">}</span><span class="s2">&quot;</span>
+      <span class="nb">puts</span> <span class="s2">&quot;Thetas: </span><span class="si">#{</span><span class="n">thetas</span><span class="si">}</span><span class="s2">&quot;</span>
+      <span class="nb">puts</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">end</span>
+    <span class="vi">@iterations</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="vi">@thetas</span> <span class="o">=</span> <span class="n">thetas</span><span class="o">.</span><span class="n">map</span><span class="o">.</span><span class="n">with_index</span> <span class="k">do</span> <span class="o">|</span><span class="n">theta</span><span class="p">,</span> <span class="n">i</span><span class="o">|</span>
+      <span class="n">theta</span> <span class="o">-</span> <span class="vi">@learning_rate</span> <span class="o">*</span> <span class="n">partial_derivative</span><span class="p">(</span><span class="n">thetas</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span></pre>
+      </div>
+
+      <p id='section-16'>
+        <p>Determines whether we should continue running the batch-decend algorithm, by
+calculating wether the mean<em>squared</em>error of our newes thetas is decreasing
+and/or has crossed the convergence_threshold.</p>
+
+<p>Params:
+  new<em>thetas &ndash; the array of theta values from the most recent iteration of
+               batch-decend.
+  old</em>thetas &ndash; the array of theta valuse from the previous iteration of
+               batch-decend.
+  features   &ndash; an array of arrays where each inner array contains the input
+               values for one record in the training set.
+  outputs    &ndash; an array of Floats, where each element is the output value of
+             one record in the training set.</p>
+
+<p>Returns:
+  True, if the thetas are converging, but the mean<em>squared</em>error has not yet
+  crossed the convergence threshold. False, if the mean<em>squared</em>error HAS
+  crossed the convergence threshold. Raises an error if the thetas are
+  diverging.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="k">def</span> <span class="nf">continue?</span> <span class="p">(</span><span class="n">new_thetas</span><span class="p">,</span> <span class="n">old_thetas</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">outputs</span><span class="p">)</span>
+    <span class="n">old_thetas_mse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">old_thetas</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">outputs</span><span class="p">)</span>
+    <span class="n">new_thetas_mse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">new_thetas</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">outputs</span><span class="p">)</span>
+    <span class="n">change</span> <span class="o">=</span> <span class="n">old_thetas_mse</span> <span class="o">-</span> <span class="n">new_thetas_mse</span>
+    <span class="k">raise</span> <span class="no">MeanSquaredErrorDivergenceError</span> <span class="k">if</span> <span class="n">change</span> <span class="o">&lt;</span> <span class="mi">0</span>
+    <span class="n">change</span><span class="o">.</span><span class="n">abs</span> <span class="o">&gt;</span> <span class="vi">@convergence_threshold</span>
+  <span class="k">end</span></pre>
+      </div>
+
+      <p id='section-17'>
+        <p>Calculates the partial derivative of the cost function. This essentially
+tells us how much to adjust each theta in our current iteration of the
+algorithm.</p>
+
+<p>Params:
+  thetas       &ndash; the list of coefficients in our line formula that we&rsquo;re
+                 trying to optimize.
+  features<em>set &ndash; the full array of arrays containing the records and
+                 features of our training set.
+  outputs      &ndash; the array of outputs for each record in our training set.
+  theta</em>index  &ndash; the index of the theta whose adjustment we&rsquo;re calculating.</p>
+
+<p>Returns:
+  The Float value by which we must adjust the theta at theta_index in the
+  current iteration of gradient-decent.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="k">def</span> <span class="nf">partial_derivative</span><span class="p">(</span><span class="n">thetas</span><span class="p">,</span> <span class="n">features_set</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">theta_index</span><span class="p">)</span>
+    <span class="n">terms</span> <span class="o">=</span> <span class="n">features_set</span><span class="o">.</span><span class="n">map</span><span class="o">.</span><span class="n">with_index</span> <span class="k">do</span> <span class="o">|</span><span class="n">features</span><span class="p">,</span> <span class="n">i</span><span class="o">|</span>
+      <span class="p">(</span><span class="n">hypothesize</span><span class="p">(</span><span class="n">thetas</span><span class="p">,</span> <span class="n">features</span><span class="p">)</span> <span class="o">-</span> <span class="n">outputs</span><span class="o">[</span><span class="n">i</span><span class="o">]</span><span class="p">)</span> <span class="o">*</span> <span class="n">features</span><span class="o">[</span><span class="n">theta_index</span><span class="o">]</span>
+    <span class="k">end</span>
+    <span class="n">terms</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="ss">:+</span><span class="p">)</span><span class="o">.</span><span class="n">to_f</span> <span class="o">/</span> <span class="n">features_set</span><span class="o">.</span><span class="n">size</span><span class="o">.</span><span class="n">to_f</span>
+  <span class="k">end</span></pre>
+      </div>
+
+      <p id='section-18'>
+        <p>Calculates a number that represent how well our line/curve fits the dataset,
+given the provided thetas.</p>
+
+<p>Params:
+  thetas       &ndash; the list of coefficients in our line formula that we&rsquo;re
+                 trying to optimize.
+  features_set &ndash; the full array of arrays containing the records and
+                 features of our training set.
+  outputs      &ndash; the array of outputs for each record in our training set.</p>
+
+<p>Returns:
+  A Float value representing the amount of error between our line and the
+  points in our dataset.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="k">def</span> <span class="nf">mean_squared_error</span><span class="p">(</span><span class="n">thetas</span><span class="p">,</span> <span class="n">features_set</span><span class="p">,</span> <span class="n">outputs</span><span class="p">)</span>
+    <span class="n">terms</span> <span class="o">=</span> <span class="n">features_set</span><span class="o">.</span><span class="n">map</span><span class="o">.</span><span class="n">with_index</span> <span class="k">do</span> <span class="o">|</span><span class="n">features</span><span class="p">,</span> <span class="n">i</span><span class="o">|</span>
+      <span class="p">(</span><span class="n">hypothesize</span><span class="p">(</span><span class="n">thetas</span><span class="p">,</span> <span class="n">features</span><span class="p">)</span> <span class="o">-</span> <span class="n">outputs</span><span class="o">[</span><span class="n">i</span><span class="o">]</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+    <span class="k">end</span>
+    <span class="n">terms</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="ss">:+</span><span class="p">)</span><span class="o">.</span><span class="n">to_f</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">features_set</span><span class="o">.</span><span class="n">size</span><span class="o">.</span><span class="n">to_f</span><span class="p">)</span>
+  <span class="k">end</span></pre>
+      </div>
+
+      <p id='section-19'>
+        <p>Runs the multivariate hypothesis function for one data point
+thetas   = the thetas vector
+features = the feature vector for one data point</p>
+
+<p>Multivariate hypothesis equation:
+ t0<em>f0 + t1</em>f1 + t2*f2 &hellip;</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="k">def</span> <span class="nf">hypothesize</span><span class="p">(</span><span class="n">thetas</span><span class="p">,</span> <span class="n">features</span><span class="p">)</span>
+    <span class="n">terms</span> <span class="o">=</span> <span class="n">thetas</span><span class="o">.</span><span class="n">zip</span> <span class="n">features</span>
+    <span class="n">terms</span><span class="o">.</span><span class="n">map</span><span class="p">{</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span> <span class="n">t</span><span class="o">.</span><span class="n">reduce</span> <span class="ss">:*</span> <span class="p">}</span><span class="o">.</span><span class="n">reduce</span> <span class="ss">:+</span>
+  <span class="k">end</span>
+
+<span class="k">end</span></pre>
+      </div>
+
+      <p id='section-20'>
+        <p>MeanSquaredErrorDivergenceError</p>
+
+<p>A RuntimeError that describes a situation where the thetas in our calculation
+are diverging (based on mean<em>squared</em>error). This is an error, because
+diverging thetas mean that the algorithm will run forever.</p>
+
+      </p>
+
+      <div class='highlight'>
+        <pre><span class="k">class</span> <span class="nc">MeanSquaredErrorDivergenceError</span> <span class="o">&lt;</span> <span class="no">RuntimeError</span>
+  <span class="k">def</span> <span class="nf">message</span>
+    <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    The Mean Squared Error is increasing, which means your thetas are diverging.</span>
+<span class="s2">    Try using a smaller learning_rate (alpha).</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+  <span class="k">end</span>
+<span class="k">end</span></pre>
+      </div>
+
+  </div>
+
+  <!--
+  <table cellspacing=0 cellpadding=0>
+  <thead>
+    <tr>
+      <th class=docs><h1>polynomial_regression.rb</h1></th>
+      <th class=code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr id='section-PolynomialRegression'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-PolynomialRegression">&#182;</a>
+        </div>
+        <h2>PolynomialRegression</h2>
+
+<p>A class from which instances of the PolynomialRegression algorithm can be
+instantiated. Polynomial Regression is a supervised machine learninging
+technique that attempts to fit a line or curve function (hence polynomial) to
+a dataset where the input values (aka features), and output values are known.
+Once fitted, the line function can be used to predict the outputs values for
+new input values.</p>
+
+<p>Currently, this implementation uses the gradient-decent method of fitting a
+curve to the dataset. In the future, we will add the option to use the normal
+equation method.</p>
+
+<p>TODO: Add option to use the normal equation method.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="k">class</span> <span class="nc">PolynomialRegression</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-2'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-2">&#182;</a>
+        </div>
+        <p>The learning_rate (sometimes called alpha), which influences the step size
+in our gradient-decent method. If too large for the provided dataset,
+gradient-decent may never reach convergence.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="kp">attr_accessor</span> <span class="ss">:learning_rate</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-3'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-3">&#182;</a>
+        </div>
+        <p>The convergence threshold is the mean<em>squared</em>error at which we decide to
+stop optimizing the fit of the line. This too must likely be adjusted based
+on the dataset.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="kp">attr_accessor</span> <span class="ss">:convergence_threshold</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-4'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-4">&#182;</a>
+        </div>
+        <p>The polynomial detree influences the shape of the line/curve that we&rsquo;re
+going to fit. A 1-degree (or first-degree) polynomial uses the formula
+&lsquo;Bx + C&rsquo;, which represents a straight but possibly slanted line. A
+2-degree (or second-degree) polynomial uses the formula &lsquo;Ax^2 + Bx + C&rsquo;,
+which represents a u-shaped line. (Note these examples assume a
+1-dimensional feature set.) The polynomial degree must be a whole number
+greater that 0.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="kp">attr_accessor</span> <span class="ss">:polynomial_degree</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-5'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-5">&#182;</a>
+        </div>
+        <p>A flag to determine whether log statements should be written to standard
+out.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="kp">attr_accessor</span> <span class="ss">:log</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-6'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-6">&#182;</a>
+        </div>
+        <p>A counter that keeps track of the number of iterations of the algorithm that
+have been run.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="kp">attr_accessor</span> <span class="ss">:iterations</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-7'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-7">&#182;</a>
+        </div>
+        <p>An array of theta values &ndash; the coefficients for each term in the polynomial
+formula. These are what the algorithm tries to learn during training, and
+are then used to make predictions for new inputs.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="kp">attr_accessor</span> <span class="ss">:thetas</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-8'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-8">&#182;</a>
+        </div>
+        <p>The array of theta values from the previous iteration of the algorithm. We
+keep these around so that we can determine if the error is increasing or
+decreasing.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="kp">attr_accessor</span> <span class="ss">:old_thetas</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-9'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-9">&#182;</a>
+        </div>
+        <p>Creates an instance of PolynomialRegression. If no parameters are passed,
+defaults are used, but given the nature of Polynomial Regression, you&rsquo;ll
+probably have to use non-default values that work for your dataset.</p>
+
+<p>Params (passed as a hash):
+  :learning<em>rate &ndash; the learning rate that should be used for
+                   gradient-decent. Defaults to 1.0e-20. (small and slow)
+  :convergence</em>threshold &ndash; the error threshold at which we stop the
+                   gradient-decent iterations because we have a &ldquo;good
+                   enough&rdquo; fit. Defaults to 1.0e-4.
+  :polynomial_degree &ndash; a Fixnum specifying the shape of the line (or the
+                   number of terms in the line&rsquo;s formula). Defaults to 1.
+  :log           &ndash; set to true for log output. Defaults to false.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">params</span> <span class="o">=</span> <span class="p">{})</span>
+    <span class="vi">@learning_rate</span>         <span class="o">=</span> <span class="n">params</span><span class="o">[</span><span class="ss">:learning_rate</span><span class="o">]</span>         <span class="o">||</span> <span class="mi">1</span><span class="o">.</span><span class="mi">0</span><span class="n">e</span><span class="o">-</span><span class="mi">20</span>
+    <span class="vi">@convergence_threshold</span> <span class="o">=</span> <span class="n">params</span><span class="o">[</span><span class="ss">:convergence_threshold</span><span class="o">]</span> <span class="o">||</span> <span class="mi">1</span><span class="o">.</span><span class="mi">0</span><span class="n">e</span><span class="o">-</span><span class="mi">4</span>
+    <span class="vi">@polynomial_degree</span>     <span class="o">=</span> <span class="n">params</span><span class="o">[</span><span class="ss">:polynomial_degree</span><span class="o">]</span>     <span class="o">||</span> <span class="mi">1</span>
+    <span class="vi">@log</span>                   <span class="o">=</span> <span class="n">params</span><span class="o">[</span><span class="ss">:log_to_standard_out</span><span class="o">]</span>   <span class="o">||</span> <span class="kp">false</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-10'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-10">&#182;</a>
+        </div>
+        <p>Predicts the output value for a given set of features (inputs), once the
+instance is trained.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">defined?</span> <span class="vi">@thetas</span>
+      <span class="n">features</span> <span class="o">=</span> <span class="n">polynomialize_features</span><span class="p">(</span><span class="o">[</span><span class="n">features</span><span class="o">]</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="o">.</span><span class="n">clone</span><span class="o">.</span><span class="n">unshift</span> <span class="mi">1</span>
+      <span class="n">hypothesize</span> <span class="vi">@thetas</span><span class="p">,</span> <span class="n">features</span>
+    <span class="k">end</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-11'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-11">&#182;</a>
+        </div>
+        <p>Runs the training process to fit a line to a particular set of feactures and
+outputs. One datapoint includes one or more features and exactly one output.</p>
+
+<p>This example data&hellip;</p>
+
+<table><thead>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</thead><tbody>
+<tr>
+<td>Feature 1</td>
+<td>Feature 2</td>
+<td>Feature 3</td>
+<td>Output</td>
+</tr>
+<tr>
+<td>&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;</td>
+<td>&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;</td>
+<td>&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;</td>
+<td>&mdash;&mdash;&mdash;&mdash;&ndash;</td>
+</tr>
+<tr>
+<td>2104</td>
+<td>5</td>
+<td>1</td>
+<td>460</td>
+</tr>
+<tr>
+<td>1416</td>
+<td>3</td>
+<td>2</td>
+<td>232</td>
+</tr>
+<tr>
+<td>1534</td>
+<td>3</td>
+<td>2</td>
+<td>315</td>
+</tr>
+<tr>
+<td>852</td>
+<td>2</td>
+<td>1</td>
+<td>178</td>
+</tr>
+<tr>
+<td>&hellip;</td>
+<td>&hellip;</td>
+<td>&hellip;</td>
+<td>&hellip;</td>
+</tr>
+</tbody></table>
+<p>&hellip;would be passed as two paramters:</p>
+
+<p>features:
+<code>[ [2104, 5, 1], [1416, 3, 2], [1534, 3, 2], [852, 2, 1], &hellip; ]</code></p>
+
+<p>outputs:
+<code>[ 460, 232, 315, 178 ]</code></p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">original_features</span><span class="p">,</span> <span class="n">outputs</span><span class="p">)</span>
+    <span class="n">features</span>    <span class="o">=</span> <span class="n">add_zero_feature</span> <span class="n">polynomialize_features</span><span class="p">(</span><span class="n">original_features</span><span class="p">)</span>
+    <span class="vi">@iterations</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="vi">@old_thetas</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">.</span><span class="n">new</span> <span class="n">features</span><span class="o">.</span><span class="n">first</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="vi">@thetas</span>     <span class="o">=</span> <span class="n">batch_descend</span> <span class="vi">@old_thetas</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">outputs</span>
+    <span class="k">while</span> <span class="n">continue?</span> <span class="vi">@thetas</span><span class="p">,</span> <span class="vi">@old_thetas</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">outputs</span>
+      <span class="vi">@old_thetas</span> <span class="o">=</span> <span class="vi">@thetas</span>
+      <span class="vi">@thetas</span> <span class="o">=</span> <span class="n">batch_descend</span> <span class="vi">@thetas</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">outputs</span>
+    <span class="k">end</span>
+    <span class="vi">@iterations</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-Private_Methods'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-Private_Methods">&#182;</a>
+        </div>
+        <h2>Private Methods</h2>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="kp">private</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-13'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-13">&#182;</a>
+        </div>
+        <p>Augments the provided features to reflect the specified polynomial degree.
+For example if for the feature &ldquo;age&rdquo;, and polynomial degree 2, this function
+would produce the array [(age), (age)^2]. For a third-degree polynomial, it
+produces [(age), (age)^2, (age)^3], and so.</p>
+
+<p>Params:
+  features &ndash; The full feature set as an array of arrays.</p>
+
+<p>Returns:
+  The augmented feature set with the additional x^2, x^3, etc terms.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">polynomialize_features</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
+    <span class="n">features</span><span class="o">.</span><span class="n">collect</span> <span class="k">do</span> <span class="o">|</span><span class="n">feature</span><span class="o">|</span>
+      <span class="p">(</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="vi">@polynomial_degree</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span> <span class="k">do</span> <span class="o">|</span><span class="n">n</span><span class="o">|</span>
+        <span class="n">feature</span><span class="o">.</span><span class="n">map</span><span class="p">{</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="n">f</span><span class="o">**</span><span class="n">n</span> <span class="p">}</span>
+      <span class="k">end</span><span class="o">.</span><span class="n">flatten</span>
+    <span class="k">end</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-14'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-14">&#182;</a>
+        </div>
+        <p>Adds a the x^0 feature, which is the variable used to multiply the theta
+value that represents the y-intercept in our curve or line equation.</p>
+
+<p>Params:
+  features &ndash; The full feature set as an array of arrays.</p>
+
+<p>Returns:
+    The augmented feature set with the additional x^0 term.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">add_zero_feature</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
+    <span class="n">features</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="n">f</span><span class="o">.</span><span class="n">clone</span><span class="o">.</span><span class="n">unshift</span> <span class="mi">1</span> <span class="p">}</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-15'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-15">&#182;</a>
+        </div>
+        <p>Runs one iteration of the batch-decend algorithm.</p>
+
+<p>Params:
+  thetas   &ndash; the list of coefficients in our line formula that we&rsquo;re trying
+             to optimize.
+  features &ndash; an array of arrays, where each inner array contains the input
+             values for one record in the training set.
+  outputs  &ndash; an array of Floats, each of which is the output value of one
+             record in the training set.
+Returns:
+  The updated array of thetas.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">batch_descend</span><span class="p">(</span><span class="n">thetas</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">outputs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="vi">@log</span>
+      <span class="nb">puts</span> <span class="s2">&quot;Iteration #</span><span class="si">#{</span><span class="vi">@iterations</span><span class="si">}</span><span class="s2">:&quot;</span>
+      <span class="nb">puts</span> <span class="s2">&quot;Features: </span><span class="si">#{</span><span class="n">features</span><span class="si">}</span><span class="s2">&quot;</span>
+      <span class="nb">puts</span> <span class="s2">&quot;Outputs: </span><span class="si">#{</span><span class="n">outputs</span><span class="si">}</span><span class="s2">&quot;</span>
+      <span class="nb">puts</span> <span class="s2">&quot;Thetas: </span><span class="si">#{</span><span class="n">thetas</span><span class="si">}</span><span class="s2">&quot;</span>
+      <span class="nb">puts</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">end</span>
+    <span class="vi">@iterations</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="vi">@thetas</span> <span class="o">=</span> <span class="n">thetas</span><span class="o">.</span><span class="n">map</span><span class="o">.</span><span class="n">with_index</span> <span class="k">do</span> <span class="o">|</span><span class="n">theta</span><span class="p">,</span> <span class="n">i</span><span class="o">|</span>
+      <span class="n">theta</span> <span class="o">-</span> <span class="vi">@learning_rate</span> <span class="o">*</span> <span class="n">partial_derivative</span><span class="p">(</span><span class="n">thetas</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-16'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-16">&#182;</a>
+        </div>
+        <p>Determines whether we should continue running the batch-decend algorithm, by
+calculating wether the mean<em>squared</em>error of our newes thetas is decreasing
+and/or has crossed the convergence_threshold.</p>
+
+<p>Params:
+  new<em>thetas &ndash; the array of theta values from the most recent iteration of
+               batch-decend.
+  old</em>thetas &ndash; the array of theta valuse from the previous iteration of
+               batch-decend.
+  features   &ndash; an array of arrays where each inner array contains the input
+               values for one record in the training set.
+  outputs    &ndash; an array of Floats, where each element is the output value of
+             one record in the training set.</p>
+
+<p>Returns:
+  True, if the thetas are converging, but the mean<em>squared</em>error has not yet
+  crossed the convergence threshold. False, if the mean<em>squared</em>error HAS
+  crossed the convergence threshold. Raises an error if the thetas are
+  diverging.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">continue?</span> <span class="p">(</span><span class="n">new_thetas</span><span class="p">,</span> <span class="n">old_thetas</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">outputs</span><span class="p">)</span>
+    <span class="n">old_thetas_mse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">old_thetas</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">outputs</span><span class="p">)</span>
+    <span class="n">new_thetas_mse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">new_thetas</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">outputs</span><span class="p">)</span>
+    <span class="n">change</span> <span class="o">=</span> <span class="n">old_thetas_mse</span> <span class="o">-</span> <span class="n">new_thetas_mse</span>
+    <span class="k">raise</span> <span class="no">MeanSquaredErrorDivergenceError</span> <span class="k">if</span> <span class="n">change</span> <span class="o">&lt;</span> <span class="mi">0</span>
+    <span class="n">change</span><span class="o">.</span><span class="n">abs</span> <span class="o">&gt;</span> <span class="vi">@convergence_threshold</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-17'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-17">&#182;</a>
+        </div>
+        <p>Calculates the partial derivative of the cost function. This essentially
+tells us how much to adjust each theta in our current iteration of the
+algorithm.</p>
+
+<p>Params:
+  thetas       &ndash; the list of coefficients in our line formula that we&rsquo;re
+                 trying to optimize.
+  features<em>set &ndash; the full array of arrays containing the records and
+                 features of our training set.
+  outputs      &ndash; the array of outputs for each record in our training set.
+  theta</em>index  &ndash; the index of the theta whose adjustment we&rsquo;re calculating.</p>
+
+<p>Returns:
+  The Float value by which we must adjust the theta at theta_index in the
+  current iteration of gradient-decent.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">partial_derivative</span><span class="p">(</span><span class="n">thetas</span><span class="p">,</span> <span class="n">features_set</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">theta_index</span><span class="p">)</span>
+    <span class="n">terms</span> <span class="o">=</span> <span class="n">features_set</span><span class="o">.</span><span class="n">map</span><span class="o">.</span><span class="n">with_index</span> <span class="k">do</span> <span class="o">|</span><span class="n">features</span><span class="p">,</span> <span class="n">i</span><span class="o">|</span>
+      <span class="p">(</span><span class="n">hypothesize</span><span class="p">(</span><span class="n">thetas</span><span class="p">,</span> <span class="n">features</span><span class="p">)</span> <span class="o">-</span> <span class="n">outputs</span><span class="o">[</span><span class="n">i</span><span class="o">]</span><span class="p">)</span> <span class="o">*</span> <span class="n">features</span><span class="o">[</span><span class="n">theta_index</span><span class="o">]</span>
+    <span class="k">end</span>
+    <span class="n">terms</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="ss">:+</span><span class="p">)</span><span class="o">.</span><span class="n">to_f</span> <span class="o">/</span> <span class="n">features_set</span><span class="o">.</span><span class="n">size</span><span class="o">.</span><span class="n">to_f</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-18'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-18">&#182;</a>
+        </div>
+        <p>Calculates a number that represent how well our line/curve fits the dataset,
+given the provided thetas.</p>
+
+<p>Params:
+  thetas       &ndash; the list of coefficients in our line formula that we&rsquo;re
+                 trying to optimize.
+  features_set &ndash; the full array of arrays containing the records and
+                 features of our training set.
+  outputs      &ndash; the array of outputs for each record in our training set.</p>
+
+<p>Returns:
+  A Float value representing the amount of error between our line and the
+  points in our dataset.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">mean_squared_error</span><span class="p">(</span><span class="n">thetas</span><span class="p">,</span> <span class="n">features_set</span><span class="p">,</span> <span class="n">outputs</span><span class="p">)</span>
+    <span class="n">terms</span> <span class="o">=</span> <span class="n">features_set</span><span class="o">.</span><span class="n">map</span><span class="o">.</span><span class="n">with_index</span> <span class="k">do</span> <span class="o">|</span><span class="n">features</span><span class="p">,</span> <span class="n">i</span><span class="o">|</span>
+      <span class="p">(</span><span class="n">hypothesize</span><span class="p">(</span><span class="n">thetas</span><span class="p">,</span> <span class="n">features</span><span class="p">)</span> <span class="o">-</span> <span class="n">outputs</span><span class="o">[</span><span class="n">i</span><span class="o">]</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+    <span class="k">end</span>
+    <span class="n">terms</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="ss">:+</span><span class="p">)</span><span class="o">.</span><span class="n">to_f</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">features_set</span><span class="o">.</span><span class="n">size</span><span class="o">.</span><span class="n">to_f</span><span class="p">)</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-19'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-19">&#182;</a>
+        </div>
+        <p>Runs the multivariate hypothesis function for one data point
+thetas   = the thetas vector
+features = the feature vector for one data point</p>
+
+<p>Multivariate hypothesis equation:
+ t0<em>f0 + t1</em>f1 + t2*f2 &hellip;</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">hypothesize</span><span class="p">(</span><span class="n">thetas</span><span class="p">,</span> <span class="n">features</span><span class="p">)</span>
+    <span class="n">terms</span> <span class="o">=</span> <span class="n">thetas</span><span class="o">.</span><span class="n">zip</span> <span class="n">features</span>
+    <span class="n">terms</span><span class="o">.</span><span class="n">map</span><span class="p">{</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span> <span class="n">t</span><span class="o">.</span><span class="n">reduce</span> <span class="ss">:*</span> <span class="p">}</span><span class="o">.</span><span class="n">reduce</span> <span class="ss">:+</span>
+  <span class="k">end</span>
+
+<span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-20'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-20">&#182;</a>
+        </div>
+        <p>MeanSquaredErrorDivergenceError</p>
+
+<p>A RuntimeError that describes a situation where the thetas in our calculation
+are diverging (based on mean<em>squared</em>error). This is an error, because
+diverging thetas mean that the algorithm will run forever.</p>
+
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="k">class</span> <span class="nc">MeanSquaredErrorDivergenceError</span> <span class="o">&lt;</span> <span class="no">RuntimeError</span>
+  <span class="k">def</span> <span class="nf">message</span>
+    <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    The Mean Squared Error is increasing, which means your thetas are diverging.</span>
+<span class="s2">    Try using a smaller learning_rate (alpha).</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+  <span class="k">end</span>
+<span class="k">end</span></pre></div>
+      </td>
+    </tr>
+  </table> -->
+</div>
+</body>

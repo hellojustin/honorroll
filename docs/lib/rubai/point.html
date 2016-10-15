@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>point.rb</title>
+  <link rel="stylesheet" href="http://jashkenas.github.io/docco/resources/linear/docco.css">
+  <link rel="stylesheet" href="http://pygments.simplabs.com/default.css"
+</head>
+<body>
+<div class='container'>
+  <div class='page'>
+    <div class='header'>
+      <h1>point.rb</h1>
+    </div>
+
+
+    <div id="jump_to">
+      Jump To &hellip;
+      <div id="jump_wrapper">
+        <div id="jump_page">
+            <a class="source" href="../rubai.html">rubai.rb</a>
+            <a class="source" href="cluster.html">cluster.rb</a>
+            <a class="source" href="k_means.html">k_means.rb</a>
+            <a class="source" href="point.html">point.rb</a>
+            <a class="source" href="polynomial_regression.html">polynomial_regression.rb</a>
+        </div>
+      </div>
+    </div>
+
+
+      <p id='section-Point'>
+        <h2>Point</h2>
+
+<p>A class representing a point (or vector) in n-dimensional space.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre><span class="k">class</span> <span class="nc">Point</span></pre>
+      </div>
+
+      <p id='section-2'>
+        <p>The coordinates of the point</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="kp">attr_accessor</span> <span class="ss">:coords</span></pre>
+      </div>
+
+      <p id='section-3'>
+        <p>The cluster to which the point belongs</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="kp">attr_accessor</span> <span class="ss">:cluster</span></pre>
+      </div>
+
+      <p id='section-4'>
+        <p>Generates an n-dimensional random point within the ranges provided for each
+dimension.</p>
+
+<p>Params:
+  dimension_ranges &ndash; An array of range objects, specifying the max/min
+                     possible value for each dimension. The length of
+                     this array determines the number of dimensions.</p>
+
+<p>Returns:
+  A Point instance with random coordinates within the ranges specified for
+  each dimension.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">random_point</span><span class="p">(</span><span class="n">dimension_ranges</span><span class="p">)</span>
+    <span class="no">Point</span><span class="o">.</span><span class="n">new</span> <span class="n">dimension_ranges</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">r</span><span class="o">|</span> <span class="nb">rand</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">min</span><span class="o">.</span><span class="n">to_f</span><span class="o">.</span><span class="n">.r</span><span class="o">.</span><span class="n">max</span><span class="o">.</span><span class="n">to_f</span><span class="p">)</span> <span class="p">}</span>
+  <span class="k">end</span></pre>
+      </div>
+
+      <p id='section-5'>
+        <p>Creates an instance of a Point class, initialized with the provided
+coordinates. If no coordinates ar provided, the point is initialized in
+2-dimensional space at [0,0]</p>
+
+<p>Params:
+  coords &ndash; an array of Float objects representing the coordinate of this
+           point in each dimension.</p>
+
+<p>Returns:
+  A Point instance.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">coords</span> <span class="o">=</span> <span class="o">[</span><span class="mi">0</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="o">.</span><span class="mi">0</span><span class="o">]</span><span class="p">)</span>
+    <span class="nb">self</span><span class="o">.</span><span class="n">coords</span> <span class="o">=</span> <span class="n">coords</span><span class="p">;</span>
+  <span class="k">end</span></pre>
+      </div>
+
+      <p id='section-6'>
+        <p>Determines the number of dimensions in which this Point is expressed, based
+on the number of elements in the @coords array.</p>
+
+<p>Returns:
+  A Fixnum representing the number of dimensions.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="k">def</span> <span class="nf">dimensions</span>
+    <span class="nb">self</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">count</span>
+  <span class="k">end</span></pre>
+      </div>
+
+      <p id='section-7'>
+        <p>Calculates the Euclidean Distance to another point.
+(https://en.wikipedia.org/wiki/Euclidean_distance)</p>
+
+<p>Params:
+  point &ndash; another Point object with the same number of dimensions, to which
+          we will calculate a distance.</p>
+
+<p>Returns:
+  The Euclidean distance, as a Float object.</p>
+      </p>
+
+      <div class='highlight'>
+        <pre>  <span class="k">def</span> <span class="nf">euclidean_distance_to</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="no">IncompatibleDimensionsError</span> <span class="k">if</span> <span class="nb">self</span><span class="o">.</span><span class="n">dimensions</span> <span class="o">!=</span> <span class="n">point</span><span class="o">.</span><span class="n">dimensions</span>
+    <span class="n">coord_pairs</span> <span class="o">=</span> <span class="nb">self</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">zip</span> <span class="n">point</span><span class="o">.</span><span class="n">coords</span>
+    <span class="no">Math</span><span class="o">.</span><span class="n">sqrt</span> <span class="n">coord_pairs</span><span class="o">.</span><span class="n">map</span><span class="p">{</span> <span class="o">|</span><span class="nb">p</span><span class="o">|</span> <span class="p">(</span><span class="nb">p</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span> <span class="o">-</span> <span class="nb">p</span><span class="o">[</span><span class="mi">1</span><span class="o">]</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="p">}</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="ss">:+</span><span class="p">)</span>
+  <span class="k">end</span>
+
+<span class="k">end</span></pre>
+      </div>
+
+      <p id='section-8'>
+        <p>IncompatibleDimensionsError</p>
+
+<p>An error class that describes a situation where execution cannot continude
+because two points are expressed in different dimensions.</p>
+
+<p>For example, a distance cannot be calculated between the points:
+  [ 1, 2, 2, 3 ] and [4, 2]</p>
+
+      </p>
+
+      <div class='highlight'>
+        <pre><span class="k">class</span> <span class="nc">IncompatibleDimensionsError</span> <span class="o">&lt;</span> <span class="no">ArgumentError</span>
+  <span class="k">def</span> <span class="nf">message</span>
+    <span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">    The provided Point object has an incompatible number of dimensions,</span>
+<span class="s1">    therefore a Euclidean distance cannot be calculated.</span>
+<span class="s1">    &#39;&#39;&#39;</span>
+  <span class="k">end</span>
+<span class="k">end</span></pre>
+      </div>
+
+  </div>
+
+  <!--
+  <table cellspacing=0 cellpadding=0>
+  <thead>
+    <tr>
+      <th class=docs><h1>point.rb</h1></th>
+      <th class=code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr id='section-Point'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-Point">&#182;</a>
+        </div>
+        <h2>Point</h2>
+
+<p>A class representing a point (or vector) in n-dimensional space.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="k">class</span> <span class="nc">Point</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-2'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-2">&#182;</a>
+        </div>
+        <p>The coordinates of the point</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="kp">attr_accessor</span> <span class="ss">:coords</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-3'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-3">&#182;</a>
+        </div>
+        <p>The cluster to which the point belongs</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="kp">attr_accessor</span> <span class="ss">:cluster</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-4'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-4">&#182;</a>
+        </div>
+        <p>Generates an n-dimensional random point within the ranges provided for each
+dimension.</p>
+
+<p>Params:
+  dimension_ranges &ndash; An array of range objects, specifying the max/min
+                     possible value for each dimension. The length of
+                     this array determines the number of dimensions.</p>
+
+<p>Returns:
+  A Point instance with random coordinates within the ranges specified for
+  each dimension.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">random_point</span><span class="p">(</span><span class="n">dimension_ranges</span><span class="p">)</span>
+    <span class="no">Point</span><span class="o">.</span><span class="n">new</span> <span class="n">dimension_ranges</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">r</span><span class="o">|</span> <span class="nb">rand</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">min</span><span class="o">.</span><span class="n">to_f</span><span class="o">.</span><span class="n">.r</span><span class="o">.</span><span class="n">max</span><span class="o">.</span><span class="n">to_f</span><span class="p">)</span> <span class="p">}</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-5'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-5">&#182;</a>
+        </div>
+        <p>Creates an instance of a Point class, initialized with the provided
+coordinates. If no coordinates ar provided, the point is initialized in
+2-dimensional space at [0,0]</p>
+
+<p>Params:
+  coords &ndash; an array of Float objects representing the coordinate of this
+           point in each dimension.</p>
+
+<p>Returns:
+  A Point instance.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">coords</span> <span class="o">=</span> <span class="o">[</span><span class="mi">0</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="o">.</span><span class="mi">0</span><span class="o">]</span><span class="p">)</span>
+    <span class="nb">self</span><span class="o">.</span><span class="n">coords</span> <span class="o">=</span> <span class="n">coords</span><span class="p">;</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-6'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-6">&#182;</a>
+        </div>
+        <p>Determines the number of dimensions in which this Point is expressed, based
+on the number of elements in the @coords array.</p>
+
+<p>Returns:
+  A Fixnum representing the number of dimensions.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">dimensions</span>
+    <span class="nb">self</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">count</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-7'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-7">&#182;</a>
+        </div>
+        <p>Calculates the Euclidean Distance to another point.
+(https://en.wikipedia.org/wiki/Euclidean_distance)</p>
+
+<p>Params:
+  point &ndash; another Point object with the same number of dimensions, to which
+          we will calculate a distance.</p>
+
+<p>Returns:
+  The Euclidean distance, as a Float object.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">euclidean_distance_to</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="no">IncompatibleDimensionsError</span> <span class="k">if</span> <span class="nb">self</span><span class="o">.</span><span class="n">dimensions</span> <span class="o">!=</span> <span class="n">point</span><span class="o">.</span><span class="n">dimensions</span>
+    <span class="n">coord_pairs</span> <span class="o">=</span> <span class="nb">self</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">zip</span> <span class="n">point</span><span class="o">.</span><span class="n">coords</span>
+    <span class="no">Math</span><span class="o">.</span><span class="n">sqrt</span> <span class="n">coord_pairs</span><span class="o">.</span><span class="n">map</span><span class="p">{</span> <span class="o">|</span><span class="nb">p</span><span class="o">|</span> <span class="p">(</span><span class="nb">p</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span> <span class="o">-</span> <span class="nb">p</span><span class="o">[</span><span class="mi">1</span><span class="o">]</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="p">}</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="ss">:+</span><span class="p">)</span>
+  <span class="k">end</span>
+
+<span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-8'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-8">&#182;</a>
+        </div>
+        <p>IncompatibleDimensionsError</p>
+
+<p>An error class that describes a situation where execution cannot continude
+because two points are expressed in different dimensions.</p>
+
+<p>For example, a distance cannot be calculated between the points:
+  [ 1, 2, 2, 3 ] and [4, 2]</p>
+
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="k">class</span> <span class="nc">IncompatibleDimensionsError</span> <span class="o">&lt;</span> <span class="no">ArgumentError</span>
+  <span class="k">def</span> <span class="nf">message</span>
+    <span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">    The provided Point object has an incompatible number of dimensions,</span>
+<span class="s1">    therefore a Euclidean distance cannot be calculated.</span>
+<span class="s1">    &#39;&#39;&#39;</span>
+  <span class="k">end</span>
+<span class="k">end</span></pre></div>
+      </td>
+    </tr>
+  </table> -->
+</div>
+</body>
