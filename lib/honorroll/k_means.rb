@@ -8,10 +8,10 @@
 #
 class KMeans
 
-  # An array of Cluster objects (see lib/rubai/cluster.rb) representing the
+  # An array of Cluster objects (see lib/honorroll/cluster.rb) representing the
   # clusters that K-Means will identify.
   attr_accessor :clusters
-  # An array of Point objects (see lib/rubai/points.rb) representing the dataset
+  # An array of Point objects (see lib/honorroll/points.rb) representing the dataset
   # on which we will run k-means.
   attr_accessor :points
 

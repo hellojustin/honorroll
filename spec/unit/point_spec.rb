@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'rubai/point'
+require 'honorroll/point'
 
 describe Point do
 

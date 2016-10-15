@@ -1,6 +1,6 @@
 require 'spec_helper'
-require 'rubai/cluster'
-require 'rubai/point'
+require 'honorroll/cluster'
+require 'honorroll/point'
 
 describe Cluster do
 

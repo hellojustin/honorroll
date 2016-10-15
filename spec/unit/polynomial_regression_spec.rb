@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'rubai/polynomial_regression'
+require 'honorroll/polynomial_regression'
 
 describe PolynomialRegression do
 

@@ -1,6 +1,6 @@
 require 'spec_helper'
-require 'rubai/k_means'
-require 'rubai/point'
+require 'honorroll/k_means'
+require 'honorroll/point'
 
 describe KMeans do
 
